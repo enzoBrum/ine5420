@@ -1,30 +1,33 @@
-import tkinter as tk
+from tkinter import *
+from tkinter import ttk
 
-# --- functions ---
 
-def toggle_text():
 
-    if btn['text'] == 'Show':
-        btn['text']  = 'Hide'
-        frame.grid(row=6, column=0, sticky='we')
-    else:
-        btn['text'] = 'Show'
-        frame.grid_forget()
 
-# --- main ---
+root = Tk()
+root.title("Feet to Meters")
+root.geometry("800x800")
+mainframe = ttk.Frame(root, padding="3 3 12 12")
+mainframe.grid(column=0, row=0, sticky=(N, W, E, S))
+root.columnconfigure(0, weight=1)
+root.rowconfigure(0, weight=1)
 
-root = tk.Tk()
+subframe = ttk.Frame(root, padding="3 3 12 12")
 
-some_list = ['A', 'B', 'C']
+ttk.Label(mainframe, text="Showing Frame 1").grid(column=1, row=1)
+ttk.Label(subframe, text="Showing Frame 2").grid(column=1, row=1)
+ttk.Label(mainframe, text="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA").grid(column=2, row=1)
+ttk.Label(subframe, text="BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB").grid(column=2, row=1)
 
-frame = tk.Frame(root)
-frame.columnconfigure(0, weight=1) # resise column
+def foo():
+    mainframe.grid_forget()
+    subframe.grid(column=0, row=0, sticky=(N,W,E,S))
 
-for i, item in enumerate(some_list):
-    b = tk.Button(frame, text=item)
-    b.grid(row=i, column=0, sticky='we')
+def bar():
+    subframe.grid_forget()
+    mainframe.grid(column=0, row=0, sticky=(N,W,E,S))
 
-btn = tk.Button(root, text='Show', command=toggle_text)
-btn.grid(row=5, column=0, sticky='w')
+ttk.Button(mainframe, text="Hide Frame 1", command=foo).grid(column=1, row=2)
+ttk.Button(subframe, text="Hide Frame 2", command=bar).grid(column=1, row=2)
 
 root.mainloop()
