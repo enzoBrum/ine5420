@@ -1,9 +1,13 @@
 from shape import Shape
 
 class Point(Shape):
-    def __init__(self, x: int, y: int):
+    shape_name: str = "Point"
+
+    def __init__(self, x: int, y: int, color: str = "red", name: str = ""):
         self._x = x
         self._y = y
+        
+        super().__init__(color, name)
 
     @property
     def x(self):
