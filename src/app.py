@@ -1,14 +1,16 @@
-from tkinter import Tk, Canvas, ttk, N, E, W, S, Listbox, StringVar
 from functools import wraps
+from tkinter import Canvas, E, Listbox, N, NS, NW, S, StringVar, Tk, W, ttk
 
-from vector2 import Vector2
-from window import Window
-from viewport import Viewport
-from shape import Shape
+import sv_ttk
+
+from display_file import DisplayFile
 from line import Line
 from point import Point
+from shape import Shape
+from vector2 import Vector2
+from viewport import Viewport
+from window import Window
 from wireframe import Wireframe
-from display_file import DisplayFile
 
 VIEWPORT_DIMENSION = Vector2(400, 400)
 PROGRAM_NAME = "sistema básico de CG 2D"
@@ -104,11 +106,13 @@ class App:
         ttk.Label(self.frame, text="Menu de Funções").grid(column=0, row=0)
         ttk.Label(self.frame, text="Objetos").grid(column=0, row=1)
         
-        listbox = Listbox(self.frame, height=10, listvariable=self.display_file.shapes_str_var)
-        listbox.grid(column=0, row=2, sticky=(N,W,E,S))
-        # scrollbar = ttk.Scrollbar(listbox, orient="vertical", command=listbox.yview)
-        # scrollbar.grid(column=1, row=2, sticky=(N, S))
-        # listbox.configure(yscrollcommand=scrollbar.set)
+        listbox = Listbox(self.frame, height=12, width=24, borderwidth=3, listvariable=self.display_file.shapes_str_var)
+        listbox.grid(column=0, row=2, sticky=(N,S,E,W))
+        scrollbar = ttk.Scrollbar(self.frame, orient="vertical", command=listbox.yview)
+        scrollbar.grid(column=1, row=2, sticky=(N,S,W))
+        listbox.configure(yscrollcommand=scrollbar.set)
+
+        
 
         
 
@@ -118,9 +122,10 @@ class App:
         self.root.geometry(f"{VIEWPORT_DIMENSION.x*2}x{VIEWPORT_DIMENSION.y*2}")
         self.root.columnconfigure(0, weight=1)
         self.root.rowconfigure(0, weight=1)
-
+        
         self.window = Window(Vector2(0,0), VIEWPORT_DIMENSION)
         self.frame = ttk.Frame(self.root, padding="3 3 12 12")
+        # self.frame.place(relx=0.5, rely=0.5, anchor="center")
         self.frame.grid(column=0, row=0, sticky=(N, W, E, S))
         self.viewport = Viewport(Vector2(0,0), VIEWPORT_DIMENSION, self.frame, column=7, row=7)
         self.display_file = DisplayFile()
@@ -128,15 +133,17 @@ class App:
         self.__create_left_menu()
 
 
-        ttk.Button(self.frame, text="Add line", command=self.add_line).grid(column=0, row=5)
-        ttk.Button(self.frame, text="Add point", command=self.add_point).grid(column=1, row=5)
-        ttk.Button(self.frame, text="Add wireframe", command=self.add_wireframe).grid(column=2, row=5)
+        ttk.Button(self.frame, text="Add line", command=self.add_line).grid(column=0, row=7)
+        ttk.Button(self.frame, text="Add point", command=self.add_point).grid(column=1, row=7)
+        ttk.Button(self.frame, text="Add wireframe", command=self.add_wireframe).grid(column=7, row=5)
         # ttk.Button(self.frame, text="zoom in", command=self.zoom_in).grid(column=0, row=1)
         # ttk.Button(self.frame, text="zoom out", command=self.zoom_out).grid(column=1, row=1)
         # ttk.Button(self.frame, text="move left", command=self.move_left).grid(column=2, row=1)
         # ttk.Button(self.frame, text="move right", command=self.move_right).grid(column=0, row=2)
         # ttk.Button(self.frame, text="move up", command=self.move_up).grid(column=1, row=2)
         # ttk.Button(self.frame, text="move down", command=self.move_down).grid(column=2, row=2)
+
+        sv_ttk.set_theme("dark")
 
     def run(self):
         self.root.mainloop()

@@ -18,7 +18,6 @@ ttk.Label(mainframe, text="Showing Frame 1").grid(column=1, row=1)
 ttk.Label(subframe, text="Showing Frame 2").grid(column=1, row=1)
 ttk.Label(mainframe, text="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA").grid(column=2, row=1)
 ttk.Label(subframe, text="BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB").grid(column=2, row=1)
-
 def foo():
     mainframe.grid_forget()
     subframe.grid(column=0, row=0, sticky=(N,W,E,S))

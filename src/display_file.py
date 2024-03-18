@@ -1,6 +1,7 @@
-from shape import Shape
 from tkinter import StringVar
 from typing import Optional
+
+from shape import Shape
 
 class DisplayFile:
     _shapes: list[Shape]
