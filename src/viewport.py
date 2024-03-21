@@ -27,8 +27,7 @@ class Viewport:
             height=canvas_size.y,
             background=background_color,
             highlightthickness=3,
-            highlightbackground="gray"
-
+            highlightbackground="gray",
         )
 
     @property
@@ -51,40 +50,15 @@ class Viewport:
     def draw(self, window_min: Vector2, window_max: Vector2, display_file: list[Shape]):
         self.canvas.delete("all")
 
-        # points = self._viewport_transform(window_min, window_max, [Vector2(window_min.x, window_min.y),
-        # Vector2(window_max.x, window_max.y)])
-        # self.canvas.create_rectangle(points[0].x, points[0].y, points[1].x, points[1].y, fill="red", width=10)
         for shape in display_file:
-            if isinstance(shape, Point):
-                point = self._viewport_transform(
-                    window_min, window_max, [Vector2(shape.x, shape.y)]
-                )[0]
+            points = shape.points
+            points = self._viewport_transform(window_min, window_max, points)
+            if len(points) == 1:
+                point = points[0]
                 self.canvas.create_oval(
                     point.x - 3, point.y - 3, point.x + 3, point.y + 3, fill="red"
                 )
-            elif isinstance(shape, Line):
-                points = self._viewport_transform(
-                    window_min,
-                    window_max,
-                    [
-                        Vector2(shape.point1.x, shape.point1.y),
-                        Vector2(shape.point2.x, shape.point2.y),
-                    ],
-                )
-                self.canvas.create_line(
-                    points[0].x,
-                    points[0].y,
-                    points[1].x,
-                    points[1].y,
-                    fill="red",
-                    width=10,
-                )
-            elif isinstance(shape, Wireframe):
-                points = self._viewport_transform(
-                    window_min,
-                    window_max,
-                    [Vector2(point.x, point.y) for point in shape.points],
-                )
+            else:
                 for i in range(len(points) - 1):
                     self.canvas.create_line(
                         points[i].x,
@@ -92,7 +66,7 @@ class Viewport:
                         points[i + 1].x,
                         points[i + 1].y,
                         fill="red",
-                        width=5,
+                        width=3,
                     )
 
                 self.canvas.create_line(
@@ -101,5 +75,5 @@ class Viewport:
                     points[0].x,
                     points[0].y,
                     fill="red",
-                    width=5,
+                    width=3,
                 )

@@ -1,12 +1,16 @@
 from typing import Union
 
+import numpy as np
+
 class Vector2:
     x: float
     y: float
+    z: float
 
-    def __init__(self, x: float, y: float):
+    def __init__(self, x: float, y: float, z: float = 1):
         self.x = x
         self.y = y
+        self.z = z
 
     def __add__(self, other: Union["Vector2", int]) -> "Vector2":
         if not isinstance(other, Vector2) and isinstance(other, (int, float)):
@@ -44,3 +48,7 @@ class Vector2:
 
     def __str__(self) -> str:
         return self.__repr__()
+    
+    @classmethod
+    def from_array(arr: np.array) -> "Vector2":
+        return Vector2(arr[0], arr[1], arr[2])

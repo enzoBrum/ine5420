@@ -36,15 +36,15 @@ class App:
 
     @redraw_viewport
     def add_point(self, x, y, name):
-        self.display_file.append(Point(x, y, name=name))
+        self.display_file.append(Point([Vector2(x, y)], name=name))
 
     @redraw_viewport
     def add_line(self, x1, y1, x2, y2, name):
-        self.display_file.append(Line(Point(x1,y1), Point(x2,y2), name=name))
+        self.display_file.append(Line([Vector2(x1, y1), Vector2(x2, y2)], name=name))
 
     @redraw_viewport
     def add_wireframe(self, points, name):
-        self.display_file.append(Wireframe([Point(x, y) for x, y in points], name=name))
+        self.display_file.append(Wireframe([Vector2(x, y) for x, y in points], name=name))
 
     @redraw_viewport
     def zoom_out(self):
