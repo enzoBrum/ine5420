@@ -12,40 +12,11 @@ from viewport import Viewport
 from window import Window
 from wireframe import Wireframe
 
-VIEWPORT_DIMENSION = Vector2(400, 400)
+VIEWPORT_DIMENSION = Vector2(600, 600)
+GEOMETRY = "1000x1000"
 PROGRAM_NAME = "sistema básico de CG 2D"
 
-"""
-Vector2:
-    x: float
-    y: float
 
-    (xw_min + xw_max, yw_min + yw_max)
-    w_min + w_max
-    
-    soma ...
-    
-Window:
-    min: Vector2
-    max: Vector2
-    
-    zoom(zoom_factor)
-    move(direction, value)
-    
-Viewport:
-    min: Vector2
-    max: Vector2
-
-    _viewport_transform(window_min, window_max, *points)
-    draw(display_file)
-
-
-window: Window --> representa a parte do nosso 
-viewport: Viewport --> canvas onde os objetos são desenhados.
-display_file: list[Point] --> estrutura com as formas geométricas
-
-add_object()
-"""
 class App:
     window: Window
     viewport: Viewport
@@ -60,6 +31,7 @@ class App:
             result = func(self, *args, **kwargs)
             self.viewport.draw(self.window.min, self.window.max, self.display_file)
             return result
+
         return wrapper
 
     @redraw_viewport
@@ -76,40 +48,43 @@ class App:
 
     @redraw_viewport
     def zoom_out(self):
-        print("AAAA")
-        self.window.zoom(-10)
-        self.viewport.draw(self.window.min, self.window.max, self.display_file)
+        self.window.zoom(-1)
 
     @redraw_viewport
     def zoom_in(self):
-        print("BBBB")
-        self.window.zoom(10)
+        self.window.zoom(1)
 
     @redraw_viewport
     def move_left(self):
-        self.window.move('L', 10)
+        self.window.move("L")
 
     @redraw_viewport
     def move_right(self):
-        self.window.move('R', 10)
+        self.window.move("R")
 
     @redraw_viewport
     def move_up(self):
-        self.window.move('U', 10)
+        self.window.move("U")
 
     @redraw_viewport
     def move_down(self):
-        self.window.move('D', 10)
+        self.window.move("D")
 
-    
-    def __create_left_menu(self):
-        ttk.Label(self.frame, text="Menu de Funções").grid(column=0, row=0)
-        ttk.Label(self.frame, text="Objetos").grid(column=0, row=1)
-        
-        listbox = Listbox(self.frame, height=12, width=24, borderwidth=3, listvariable=self.display_file.shapes_str_var)
-        listbox.grid(column=0, row=2, sticky=(N,S,E,W))
-        scrollbar = ttk.Scrollbar(self.frame, orient="vertical", command=listbox.yview)
-        scrollbar.grid(column=1, row=2, sticky=(N,S,W))
+    def __create_object_listbox(self, menu_frame: ttk.Frame):
+        ttk.Label(menu_frame, text="Objetos").grid(column=0, row=1, sticky="w")
+
+        listbox = Listbox(
+            menu_frame,
+            height=12,
+            width=24,
+            borderwidth=3,
+            listvariable=self.display_file.shapes_str_var,
+            highlightbackground="black",
+            highlightthickness=1,
+        )
+        listbox.grid(column=0, row=2, sticky=(N, S, E, W))
+        scrollbar = ttk.Scrollbar(menu_frame, orient="vertical", command=listbox.yview)
+        scrollbar.grid(column=1, row=2, sticky=(N, S, W))
         listbox.configure(yscrollcommand=scrollbar.set)
 
     def add_object(self):
@@ -184,36 +159,96 @@ class App:
             entry_points = ttk.Entry(shape_frame)
             entry_points.grid(row=1, column=0, padx=5, pady=5)
         
+    def __create_window_controls(self, menu_frame: ttk.Frame):
+        window_control_frame = ttk.Frame(
+            menu_frame, padding="12 -3 12 12", border=3, borderwidth=3, relief="groove"
+        )
+
+        window_control_frame.grid(column=0, row=3, sticky="nswe", pady=12)
+        window_control_frame.grid_columnconfigure(0, weight=1)
+
+        ttk.Label(window_control_frame, text="Window").grid(
+            column=0, row=3, sticky="nw"
+        )
+
+        ttk.Label(window_control_frame, text="Passo:").grid(column=0, row=4, sticky="w")
+
+        ttk.Entry(window_control_frame, textvariable=self.window.step_var).grid(
+            column=1, row=4, sticky="w"
+        )
+
+        move_controls_frame = ttk.Frame(window_control_frame, padding="3 30 3 3")
+        move_controls_frame.grid(column=0, row=5, columnspan=2, rowspan=2)
+        ttk.Button(move_controls_frame, text="Up", command=self.move_up).grid(
+            column=1, row=0, sticky="ns"
+        )
+        ttk.Button(move_controls_frame, text="Left", command=self.move_left).grid(
+            column=0, row=1, sticky="w", 
+        )
+        ttk.Button(move_controls_frame,text="Right", command=self.move_right).grid(
+            column=2, row=1, sticky="e"
+        )
+        ttk.Button(move_controls_frame, text="Down", command=self.move_down).grid(
+            column=1, row=1
+        )
+
+        zoom_controls = ttk.Frame(window_control_frame, padding="3 30 3 3")
+        zoom_controls.grid(column=0, row=7, columnspan=2)
+        ttk.Button(zoom_controls, text="In", command=self.zoom_in).grid(
+            column=0, row=3
+        )
+        ttk.Button(zoom_controls, text="Out", command=self.zoom_out).grid(
+            column=1, row=3
+        )
+
+    def __create_left_menu(self):
+        menu_frame = ttk.Frame(
+            self.frame, padding="12 -3 12 12", border=3, borderwidth=3, relief="groove"
+        )
+        menu_frame.grid(column=0, row=0)
+
+        ttk.Label(menu_frame, text="Menu de Funções").grid(column=0, row=0, sticky="n")
+
+        self.__create_object_listbox(menu_frame)
+        self.__create_window_controls(menu_frame)
+
+
+    def __create_viewport_and_log(self):
+        viewport_frame = ttk.Frame(self.frame, padding="12 -3 12 12")
+        viewport_frame.grid(column=1, row=0)
+
+        ttk.Label(viewport_frame, text="Viewport").grid(column=0, row=0, sticky="w")
+
+        self.viewport = Viewport(
+            Vector2(0, 0), VIEWPORT_DIMENSION, viewport_frame, "#ffffff"
+        )
+
+        self.viewport.canvas.grid(column=0, row=1)
+
     def __init__(self):
         self.root = Tk()
         self.root.title(PROGRAM_NAME)
-        self.root.geometry(f"{VIEWPORT_DIMENSION.x*2}x{VIEWPORT_DIMENSION.y*2}")
+        self.root.geometry(GEOMETRY)
         self.root.columnconfigure(0, weight=1)
         self.root.rowconfigure(0, weight=1)
-        
-        self.window = Window(Vector2(0,0), VIEWPORT_DIMENSION)
+
+        self.window = Window(Vector2(0, 0), VIEWPORT_DIMENSION)
         self.frame = ttk.Frame(self.root, padding="3 3 12 12")
-        # self.frame.place(relx=0.5, rely=0.5, anchor="center")
         self.frame.grid(column=0, row=0, sticky=(N, W, E, S))
-        self.viewport = Viewport(Vector2(0,0), VIEWPORT_DIMENSION, self.frame, column=7, row=7)
         self.display_file = DisplayFile()
 
         self.__create_left_menu()
+        self.__create_viewport_and_log()
 
-        #ttk.Button(self.frame, text="Add line", command=self.add_line).grid(column=0, row=7)
-        #ttk.Button(self.frame, text="Add point", command=self.add_point).grid(column=1, row=7)
-        #ttk.Button(self.frame, text="Add wireframe", command=self.add_wireframe).grid(column=7, row=5)
-        ttk.Button(self.frame, text="zoom in", command=self.zoom_in).grid(column=0, row=4)
-        ttk.Button(self.frame, text="zoom out", command=self.zoom_out).grid(column=1, row=4)
-        ttk.Button(self.frame, text="move left", command=self.move_left).grid(column=2, row=4)
-        ttk.Button(self.frame, text="move right", command=self.move_right).grid(column=0, row=5)
-        ttk.Button(self.frame, text="move up", command=self.move_up).grid(column=1, row=5)
-        ttk.Button(self.frame, text="move down", command=self.move_down).grid(column=2, row=5)
-        ttk.Button(self.frame, text="Add Object", command=self.add_object).grid(column=0, row=6)
-
-
-
-        sv_ttk.set_theme("dark")
+        ttk.Button(self.frame, text="Add line", command=self.add_line).grid(
+            column=0, row=7
+        )
+        ttk.Button(self.frame, text="Add point", command=self.add_point).grid(
+            column=1, row=7
+        )
+        ttk.Button(self.frame, text="Add wireframe", command=self.add_wireframe).grid(
+            column=7, row=5
+        )
 
     def run(self):
         self.root.mainloop()

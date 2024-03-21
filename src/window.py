@@ -1,44 +1,64 @@
+from tkinter import StringVar
+import traceback
+
 from vector2 import Vector2
 
 
 class Window:
+    step: float
+    step_var: StringVar
+    min: Vector2
+    max: Vector2
+
     def __init__(self, vector1: Vector2, vector2: Vector2):
-        self._min = vector1
-        self._max = vector2
+        self.min = vector1
+        self.max = vector2
+        self.step = 10.0
+        self.step_var = StringVar(value=str(10.0))
 
-    def zoom(self, zoom_factor: float):
-        print(f"ZOOM: {zoom_factor}")
-        print(self._min, self._max)
-        
-        final_size = self._max - zoom_factor
-        final_size = final_size + self._min + zoom_factor
+        self.step_var.trace_add("write", self.set_step)
 
-        if final_size.x < 10 or final_size.y < 10:
+    def set_step(self, *args):
+        print(f"Alterando step da window para {self.step_var.get()}")
+
+        try:
+            self.step = float(self.step_var.get())
+        except ValueError:
+            print(
+                f"Erro ao setar step para {self.step_var.get()}!\nMantendo o valor {self.step}"
+            )
+
+    def zoom(self, mult: int):
+        step = self.step * mult
+
+        final_max = self.max - step
+        final_min = self.min + step
+
+        if abs(final_max.x - final_min.x) < 10 or abs(final_max.y - final_min.y) < 10:
+            print("Window muito pequena!")
             return
 
-        self._min += zoom_factor
-        self._max -= zoom_factor
+        print(
+            f"ZOOM:\n\twindow max: {self.max} --> {final_max}\n\twindow min: {self.min} --> {final_min}"
+        )
+        self.min += step
+        self.max -= step
 
-        print(self._min, self._max)
-
-    def move(self, direction: str, value: float):
-        if direction == 'R':
-            self._max.x += value
-            self._min.x += value
-        elif direction == 'L':
-            self._max.x -= value
-            self._min.x -= value
-        elif direction == 'U':
-            self._max.y += value
-            self._min.y += value
+    def move(self, direction: str):
+        print(f"Movendo Window para {direction}")
+        print(f"window max original: {self.max}\nwindow min original: {self.min}")
+        if direction == "R":
+            self.max.x += self.step
+            self.min.x += self.step
+        elif direction == "L":
+            self.max.x -= self.step
+            self.min.x -= self.step
+        elif direction == "U":
+            self.max.y += self.step
+            self.min.y += self.step
         else:
-            self._min.y -= value
-            self._max.y -= value
+            self.min.y -= self.step
+            self.max.y -= self.step
 
-    @property
-    def max(self) -> Vector2:
-        return self._max
-    
-    @property
-    def min(self) -> Vector2:
-        return self._min
+        print(f"window max final: {self.max}\nwindow min final: {self.min}")
+
