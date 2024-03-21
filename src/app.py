@@ -164,21 +164,21 @@ class App:
             menu_frame, padding="12 -3 12 12", border=3, borderwidth=3, relief="groove"
         )
 
-        window_control_frame.grid(column=0, row=3, sticky="nswe", pady=12)
+        window_control_frame.grid(column=0, row=4, sticky="nswe", pady=12)
         window_control_frame.grid_columnconfigure(0, weight=1)
 
         ttk.Label(window_control_frame, text="Window").grid(
-            column=0, row=3, sticky="nw"
+            column=0, row=4, sticky="nw"
         )
 
-        ttk.Label(window_control_frame, text="Passo:").grid(column=0, row=4, sticky="w")
+        ttk.Label(window_control_frame, text="Passo:").grid(column=0, row=5, sticky="w")
 
         ttk.Entry(window_control_frame, textvariable=self.window.step_var).grid(
-            column=1, row=4, sticky="w"
+            column=1, row=5, sticky="w"
         )
 
         move_controls_frame = ttk.Frame(window_control_frame, padding="3 30 3 3")
-        move_controls_frame.grid(column=0, row=5, columnspan=2, rowspan=2)
+        move_controls_frame.grid(column=0, row=6, columnspan=2, rowspan=2)
         ttk.Button(move_controls_frame, text="Up", command=self.move_up).grid(
             column=1, row=0, sticky="ns"
         )
@@ -193,7 +193,7 @@ class App:
         )
 
         zoom_controls = ttk.Frame(window_control_frame, padding="3 30 3 3")
-        zoom_controls.grid(column=0, row=7, columnspan=2)
+        zoom_controls.grid(column=0, row=8, columnspan=2)
         ttk.Button(zoom_controls, text="In", command=self.zoom_in).grid(
             column=0, row=3
         )
@@ -210,6 +210,9 @@ class App:
         ttk.Label(menu_frame, text="Menu de Funções").grid(column=0, row=0, sticky="n")
 
         self.__create_object_listbox(menu_frame)
+        ttk.Button(menu_frame, text="Add Object", command=self.add_object).grid(
+            column=0, row=3
+        )
         self.__create_window_controls(menu_frame)
 
 
@@ -240,15 +243,6 @@ class App:
         self.__create_left_menu()
         self.__create_viewport_and_log()
 
-        ttk.Button(self.frame, text="Add line", command=self.add_line).grid(
-            column=0, row=7
-        )
-        ttk.Button(self.frame, text="Add point", command=self.add_point).grid(
-            column=1, row=7
-        )
-        ttk.Button(self.frame, text="Add wireframe", command=self.add_wireframe).grid(
-            column=7, row=5
-        )
 
     def run(self):
         self.root.mainloop()
