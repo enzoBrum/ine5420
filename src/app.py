@@ -85,7 +85,7 @@ class App:
         scrollbar.grid(column=1, row=2, sticky=(N, S, W))
         listbox.configure(yscrollcommand=scrollbar.set)
 
-    def add_object(self):
+    def __add_object(self):
         frame = Toplevel(self.root)
         frame.title("Add Object")
 
@@ -103,7 +103,7 @@ class App:
             frame,
             type_var,
             *options,
-            command=lambda selection: self.update_shape_frame(
+            command=lambda selection: self.__update_shape_frame(
                 shape_frame, type_var.get()
             ),
         ).grid(row=1, column=1, padx=10, pady=5)
@@ -111,30 +111,40 @@ class App:
         ttk.Button(
             frame,
             text="Add",
-            command=lambda: self.add_selected_object(
+            command=lambda: self.__add_selected_object(
                 type_var.get(), entry_name.get(), shape_frame
             ),
         ).grid(row=3, columnspan=2, padx=10, pady=5)
 
-    def add_selected_object(self, type_obj, name, shape_frame):
-        if type_obj == "Point":
-            x = float(shape_frame.winfo_children()[1].get())
-            y = float(shape_frame.winfo_children()[3].get())
-            self.add_point(x, y, name)
-        elif type_obj == "Line":
-            x1 = float(shape_frame.winfo_children()[1].get())
-            y1 = float(shape_frame.winfo_children()[3].get())
-            x2 = float(shape_frame.winfo_children()[5].get())
-            y2 = float(shape_frame.winfo_children()[7].get())
-            self.add_line(x1, y1, x2, y2, name)
-        elif type_obj == "Wireframe":
-            points = str(shape_frame.winfo_children()[1].get())
-            print(type(points))
-            poit = eval(f"[{points}]")
-            print(poit)
-            self.add_wireframe(poit, name)
+    def __add_selected_object(self, type_obj: str, name: str, shape_frame: ttk.Frame):
+        if name == '':
+            row = 4 if type_obj == 'Line' else 2
+            column = 0 if type_obj == 'Wireframe' else 1
+            ttk.Label(shape_frame, text="Digit a name.").grid(row=row, column=column)
+            return
 
-    def update_shape_frame(self, shape_frame, type_obj):
+        try:
+            if type_obj == "Point":
+                x = float(shape_frame.winfo_children()[1].get())
+                y = float(shape_frame.winfo_children()[3].get())
+                self.add_point(x, y, name)
+            elif type_obj == "Line":
+                x1 = float(shape_frame.winfo_children()[1].get())
+                y1 = float(shape_frame.winfo_children()[3].get())
+                x2 = float(shape_frame.winfo_children()[5].get())
+                y2 = float(shape_frame.winfo_children()[7].get())
+                self.add_line(x1, y1, x2, y2, name)
+            elif type_obj == "Wireframe":
+                points = str(shape_frame.winfo_children()[1].get())
+                self.add_wireframe(eval(f"[{points}]"), name)
+        except:
+            error_message = "X's and Y's must be a number." if type_obj in ['Line', 'Point'] else \
+                            "Format is incorrect or X's and Y's are not a number."
+            row = 4 if type_obj == 'Line' else 2
+            column = 0 if type_obj == 'Wireframe' else 1
+            ttk.Label(shape_frame, text=error_message).grid(row=row, column=column)
+            
+    def __update_shape_frame(self, shape_frame: ttk.Frame, type_obj: str):
         for widget in shape_frame.winfo_children():
             widget.destroy()
 
@@ -221,7 +231,7 @@ class App:
         ttk.Label(menu_frame, text="Menu de Funções").grid(column=0, row=0, sticky="n")
 
         self.__create_object_listbox(menu_frame)
-        ttk.Button(menu_frame, text="Add Object", command=self.add_object).grid(
+        ttk.Button(menu_frame, text="Add Object", command=self.__add_object).grid(
             column=0, row=3
         )
         self.__create_window_controls(menu_frame)
