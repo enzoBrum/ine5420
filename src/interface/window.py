@@ -1,18 +1,18 @@
 from tkinter import StringVar
 import traceback
 
-from vector2 import Vector2
+from vector3 import Vector3
 
 
 class Window:
     step: float
     step_var: StringVar
-    min: Vector2
-    max: Vector2
+    min: Vector3
+    max: Vector3
 
-    def __init__(self, vector1: Vector2, vector2: Vector2):
+    def __init__(self, vector1: Vector3, vector3: Vector3):
         self.min = vector1
-        self.max = vector2
+        self.max = vector3
         self.step = 10.0
         self.step_var = StringVar(value=str(10.0))
 

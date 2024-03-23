@@ -4,13 +4,15 @@
   };
   outputs = { self, nixpkgs, utils }: utils.lib.eachDefaultSystem (system:
     let
-      pythonOverlay = final: prev: { python312 = prev.python312.override { x11Support = true; }; };
-      pkgs = import nixpkgs { overlays = [ pythonOverlay ]; };
+      pkgs = nixpkgs.legacyPackages.${system};
       pythonPackages = pkgs.python312Packages;
     in
     {
-      devShell = pkgs.mkShell {
+      devShell = pkgs.mkShell rec {
         venvDir = "./.venv";
+        NIX_LD = builtins.readFile "${pkgs.stdenv.cc}/nix-support/dynamic-linker";
+        NIX_LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath buildInputs;
+
 
         buildInputs = with pkgs; [
           pythonPackages.python
@@ -19,25 +21,17 @@
           pythonPackages.venvShellHook
 
           stdenv.cc.cc
-          openssl
-          libffi
-          libpqxx
-          freetype
-          libjpeg
-          git
           zlib
-          openssl
-          postgresql
-          curl
-          gcc
-          jdk21
-          maven
-          jdt-language-server
         ];
 
         postVenvCreation = /* bash */
           ''
             pip install requirements.txt
+          '';
+
+        postShellHook = /* bash */
+          ''
+            export LD_LIBRARY_PATH=$NIX_LD_LIBRARY_PATH:$LD_LIBRARY_PATH
           '';
       };
     }

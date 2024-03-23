@@ -1,18 +1,14 @@
 from functools import wraps
-from tkinter import Canvas, E, Listbox, N, NS, NW, S, StringVar, Tk, W, ttk
+from tkinter import Canvas, E, Listbox, N, NS, NW, S, StringVar, Tk, Toplevel, W, ttk
 
 import sv_ttk
 
 from display_file import DisplayFile
-from line import Line
-from point import Point
-from shape import Shape
-from vector2 import Vector2
-from viewport import Viewport
-from window import Window
-from wireframe import Wireframe
+from interface import Viewport, Window
+from shape import Line, Point, Wireframe
+from vector3 import Vector3
 
-VIEWPORT_DIMENSION = Vector2(600, 600)
+VIEWPORT_DIMENSION = (600, 600)
 GEOMETRY = "1000x1000"
 PROGRAM_NAME = "sistema básico de CG 2D"
 
@@ -27,7 +23,7 @@ class App:
 
     def redraw_viewport(func):
         @wraps(func)
-        def wrapper(self, *args, **kwargs):
+        def wrapper(self: "App", *args, **kwargs):
             result = func(self, *args, **kwargs)
             self.viewport.draw(self.window.min, self.window.max, self.display_file)
             return result
@@ -36,15 +32,17 @@ class App:
 
     @redraw_viewport
     def add_point(self, x, y, name):
-        self.display_file.append(Point([Vector2(x, y)], name=name))
+        self.display_file.append(Point([Vector3(x, y)], name=name))
 
     @redraw_viewport
     def add_line(self, x1, y1, x2, y2, name):
-        self.display_file.append(Line([Vector2(x1, y1), Vector2(x2, y2)], name=name))
+        self.display_file.append(Line([Vector3(x1, y1), Vector3(x2, y2)], name=name))
 
     @redraw_viewport
     def add_wireframe(self, points, name):
-        self.display_file.append(Wireframe([Vector2(x, y) for x, y in points], name=name))
+        self.display_file.append(
+            Wireframe([Vector3(x, y) for x, y in points], name=name)
+        )
 
     @redraw_viewport
     def zoom_out(self):
@@ -88,7 +86,7 @@ class App:
         listbox.configure(yscrollcommand=scrollbar.set)
 
     def add_object(self):
-        frame = Tk()
+        frame = Toplevel(self.root)
         frame.title("Add Object")
 
         shape_frame = ttk.Frame(frame)
@@ -100,13 +98,23 @@ class App:
 
         ttk.Label(frame, text="Shape:").grid(row=1, column=0, padx=10, pady=5)
         type_var = StringVar(frame)
-        options = ['Select a shape', "Point", "Line", "Wireframe"]
-        ttk.OptionMenu(frame, type_var, *options, command=lambda selection: self.update_shape_frame
-                                     (shape_frame, type_var.get())).grid(row=1, column=1, padx=10, pady=5)
+        options = ["Select a shape", "Point", "Line", "Wireframe"]
+        ttk.OptionMenu(
+            frame,
+            type_var,
+            *options,
+            command=lambda selection: self.update_shape_frame(
+                shape_frame, type_var.get()
+            ),
+        ).grid(row=1, column=1, padx=10, pady=5)
 
-
-        ttk.Button(frame, text="Add", command=lambda: self.add_selected_object
-                                (type_var.get(), entry_name.get(), shape_frame)).grid(row=3, columnspan=2, padx=10, pady=5)
+        ttk.Button(
+            frame,
+            text="Add",
+            command=lambda: self.add_selected_object(
+                type_var.get(), entry_name.get(), shape_frame
+            ),
+        ).grid(row=3, columnspan=2, padx=10, pady=5)
 
     def add_selected_object(self, type_obj, name, shape_frame):
         if type_obj == "Point":
@@ -122,7 +130,7 @@ class App:
         elif type_obj == "Wireframe":
             points = str(shape_frame.winfo_children()[1].get())
             print(type(points))
-            poit = eval(f"[{points}]") 
+            poit = eval(f"[{points}]")
             print(poit)
             self.add_wireframe(poit, name)
 
@@ -155,10 +163,13 @@ class App:
             entry_y2 = ttk.Entry(shape_frame)
             entry_y2.grid(row=3, column=1, padx=5, pady=5)
         elif type_obj == "Wireframe":
-            ttk.Label(shape_frame, text="Give the points in exactly format: (x1, y1), (x2, y2), (x3,y3) ...").grid(row=0, column=0, padx=5, pady=5)
+            ttk.Label(
+                shape_frame,
+                text="Give the points in exactly format: (x1, y1), (x2, y2), (x3,y3) ...",
+            ).grid(row=0, column=0, padx=5, pady=5)
             entry_points = ttk.Entry(shape_frame)
             entry_points.grid(row=1, column=0, padx=5, pady=5)
-        
+
     def __create_window_controls(self, menu_frame: ttk.Frame):
         window_control_frame = ttk.Frame(
             menu_frame, padding="12 -3 12 12", border=3, borderwidth=3, relief="groove"
@@ -183,9 +194,11 @@ class App:
             column=1, row=0, sticky="ns"
         )
         ttk.Button(move_controls_frame, text="Left", command=self.move_left).grid(
-            column=0, row=1, sticky="w", 
+            column=0,
+            row=1,
+            sticky="w",
         )
-        ttk.Button(move_controls_frame,text="Right", command=self.move_right).grid(
+        ttk.Button(move_controls_frame, text="Right", command=self.move_right).grid(
             column=2, row=1, sticky="e"
         )
         ttk.Button(move_controls_frame, text="Down", command=self.move_down).grid(
@@ -194,9 +207,7 @@ class App:
 
         zoom_controls = ttk.Frame(window_control_frame, padding="3 30 3 3")
         zoom_controls.grid(column=0, row=8, columnspan=2)
-        ttk.Button(zoom_controls, text="In", command=self.zoom_in).grid(
-            column=0, row=3
-        )
+        ttk.Button(zoom_controls, text="In", command=self.zoom_in).grid(column=0, row=3)
         ttk.Button(zoom_controls, text="Out", command=self.zoom_out).grid(
             column=1, row=3
         )
@@ -215,7 +226,6 @@ class App:
         )
         self.__create_window_controls(menu_frame)
 
-
     def __create_viewport_and_log(self):
         viewport_frame = ttk.Frame(self.frame, padding="12 -3 12 12")
         viewport_frame.grid(column=1, row=0)
@@ -223,7 +233,10 @@ class App:
         ttk.Label(viewport_frame, text="Viewport").grid(column=0, row=0, sticky="w")
 
         self.viewport = Viewport(
-            Vector2(0, 0), VIEWPORT_DIMENSION, viewport_frame, "#ffffff"
+            Vector3(0, 0),
+            Vector3(VIEWPORT_DIMENSION[0], VIEWPORT_DIMENSION[1]),
+            viewport_frame,
+            "#ffffff",
         )
 
         self.viewport.canvas.grid(column=0, row=1)
@@ -235,14 +248,15 @@ class App:
         self.root.columnconfigure(0, weight=1)
         self.root.rowconfigure(0, weight=1)
 
-        self.window = Window(Vector2(0, 0), VIEWPORT_DIMENSION)
+        self.window = Window(
+            Vector3(0, 0), Vector3(VIEWPORT_DIMENSION[0], VIEWPORT_DIMENSION[1])
+        )
         self.frame = ttk.Frame(self.root, padding="3 3 12 12")
         self.frame.grid(column=0, row=0, sticky=(N, W, E, S))
         self.display_file = DisplayFile()
 
         self.__create_left_menu()
         self.__create_viewport_and_log()
-
 
     def run(self):
         self.root.mainloop()
