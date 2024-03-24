@@ -1,6 +1,7 @@
 from typing import Union
 
 import numpy as np
+import numpy.typing as npt
 
 class Vector3:
     x: float
@@ -50,6 +51,6 @@ class Vector3:
         return self.__repr__()
     
     @classmethod
-    def from_array(arr: np.array) -> "Vector3":
+    def from_array(arr: npt.NDArray[np.float32]) -> "Vector3":
         return Vector3(arr[0], arr[1], arr[2])
 
