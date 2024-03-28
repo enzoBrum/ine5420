@@ -13,6 +13,10 @@ VIEWPORT_DIMENSION = (600, 600)
 GEOMETRY = "1000x1000"
 PROGRAM_NAME = "sistema básico de CG 2D"
 
+"""
+TODO:
+    - mudar  código do App para outras classes em widgets/
+"""
 
 class App:
     window: Window
@@ -102,25 +106,26 @@ class App:
         self.selected_shape.rotate(degree, Vector3(x, y, 1))
 
     @redraw_viewport
-    def __update_selected_shape(self, event: Event):
-        if self.selected_shape:
-            self.selected_shape.color = self.selected_shape_old_color
-
-        if event is None:
+    def __update_selected_shape(self, event: Event, clear_selection: bool = False):
+        if clear_selection:
+            if self.selected_shape:
+                self.selected_shape.color = self.selected_shape_old_color
+                self.selected_shape = None
+                self.xvar.set(0)
+                self.yvar.set(0)
             return
         
+
         index = event.widget.curselection()
         if index:
+            if self.selected_shape:
+                self.selected_shape.color = self.selected_shape_old_color
             self.selected_shape = self.display_file.get_shape_by_id(event.widget.get(index[0]))
             self.selected_shape_old_color = self.selected_shape.color
             print("Color: %s" % self.selected_shape_old_color)
             self.selected_shape.color = "gold"
             self.xvar.set(self.selected_shape.center[0])
             self.yvar.set(self.selected_shape.center[1])
-        else:
-            # self.selected_shape.color = self.selected_shape_old_color
-            # self.selected_shape = None
-            ...
 
         print(f"Selected shape: {self.selected_shape}")
 
@@ -147,7 +152,7 @@ class App:
         ttk.Button(button_frame, text="Add Object", command=self.__add_object).grid(
             column=0, row=0
         )
-        ttk.Button(button_frame, text="Clear Selection", command=lambda: self.__update_selected_shape(None)).grid(
+        ttk.Button(button_frame, text="Clear Selection", command=lambda: self.__update_selected_shape(None, clear_selection=True)).grid(
             column=1, row=0, sticky="w"
         )
 

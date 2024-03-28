@@ -1,7 +1,7 @@
 from abc import ABC, abstractproperty
 from typing import Optional
 from uuid import uuid4
-from math import sin, cos
+from math import sin, cos, radians
 
 import numpy as np
 import numpy.typing as npt
@@ -26,7 +26,7 @@ class Shape(ABC):
         return f"{self.shape_name}[{self.name}]"
 
     def rotate(self, degree: float, point: Vector3) -> None:
-        center = self.center
+        degree = radians(degree)
         matrix_t = self.__create_translation_matrix((point.x, point.y), Vector3(0,0,1), 1)
         matrix_r = np.array(
             [
