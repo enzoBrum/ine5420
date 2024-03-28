@@ -59,15 +59,15 @@ class Viewport:
         self.canvas.delete("all")
 
         for shape in display_file:
-            if not self._inside_window(shape.points, window_min, window_max):
-                continue
+            # if not self._inside_window(shape.points, window_min, window_max):
+            #     continue
             points = shape.points
             points = self._viewport_transform(window_min, window_max, points)
-            print(f"{shape.points} --> {points}")
+            # print(f"{shape.points} --> {points}")
             if len(points) == 1:
                 point = points[0]
                 self.canvas.create_oval(
-                    point.x - 3, point.y - 3, point.x + 3, point.y + 3, fill="red"
+                    point.x - 3, point.y - 3, point.x + 3, point.y + 3, fill=shape.color
                 )
             else:
                 for i in range(len(points) - 1):
@@ -76,7 +76,7 @@ class Viewport:
                         points[i].y,
                         points[i + 1].x,
                         points[i + 1].y,
-                        fill="red",
+                        fill=shape.color,
                         width=3,
                     )
 
@@ -85,6 +85,6 @@ class Viewport:
                     points[-1].y,
                     points[0].x,
                     points[0].y,
-                    fill="red",
+                    fill=shape.color,
                     width=3,
                 )

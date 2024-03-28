@@ -1,6 +1,7 @@
 from abc import ABC, abstractproperty
 from typing import Optional
 from uuid import uuid4
+from math import sin, cos
 
 import numpy as np
 import numpy.typing as npt
@@ -25,17 +26,19 @@ class Shape(ABC):
         return f"{self.shape_name}[{self.name}]"
 
     def rotate(self, degree: float, point: Vector3) -> None:
-        matrix_t = self.__create_translation_matrix(point, 1)
+        center = self.center
+        matrix_t = self.__create_translation_matrix((point.x, point.y), Vector3(0,0,1), 1)
         matrix_r = np.array(
             [
-                 [np.cos(degree), -np.sin(degree), 0],
-                 [np.sin(degree), np.cos(degree), 0],
+                 [cos(degree), -sin(degree), 0],
+                 [sin(degree), cos(degree), 0],
                  [0, 0, 1]
             ]
         )
-        matrix_t2 = self.__create_translation_matrix(point, -1)
+        matrix_t2 = self.__create_translation_matrix((point.x, point.y), Vector3(0,0,1), -1)
 
-        matrix = np.matmul(matrix_t, matrix_r, matrix_t2)
+        matrix = np.matmul(matrix_t, matrix_r)
+        matrix = np.matmul(matrix, matrix_t2)
         
         for i in range(len(self.points)):
             point = np.array([self.points[i].x, self.points[i].y, self.points[i].z])
@@ -55,7 +58,9 @@ class Shape(ABC):
             self.points[i] = Vector3.from_array(np.matmul(point, matrix)) 
     
     def scale(self, factor: float) -> None:
-        matrix_t = self.__create_translation_matrix(Vector3(0, 0, 0), 1)
+        center = self.center
+        
+        matrix_t = self.__create_translation_matrix(center, Vector3(0, 0, 1), 1)
         matrix_s = np.array(
             [
                 [factor, 0, 0],
@@ -63,16 +68,18 @@ class Shape(ABC):
                 [0,0,1]
             ]
         )
-        matrix_t2 = self.__create_translation_matrix(Vector3(0, 0, 0), -1)
+        matrix_t2 = self.__create_translation_matrix(center, Vector3(0, 0, 1), -1)
 
-        matrix = np.matmul(matrix_t, matrix_s, matrix_t2)
+        matrix = np.matmul(matrix_t, matrix_s)
+        matrix = np.matmul(matrix, matrix_t2)
 
         for i in range(len(self.points)):
+            og_point = self.points[i]
             point = np.array([self.points[i].x, self.points[i].y, self.points[i].z])
             self.points[i] = Vector3.from_array(np.matmul(point, matrix))
 
-    def __create_translation_matrix(self, point: Vector3, center_mult: float) -> npt.NDArray[np.float32]:
-        cx, cy = self.center
+    def __create_translation_matrix(self, center: tuple[float, float], point: Vector3, center_mult: float) -> npt.NDArray[np.float32]:
+        cx, cy = center
         return np.array(
             [
                  [1, 0, 0],

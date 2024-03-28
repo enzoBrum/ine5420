@@ -51,6 +51,6 @@ class Vector3:
         return self.__repr__()
     
     @classmethod
-    def from_array(arr: npt.NDArray[np.float32]) -> "Vector3":
+    def from_array(cls, arr: npt.NDArray[np.float32]) -> "Vector3":
         return Vector3(arr[0], arr[1], arr[2])
 
