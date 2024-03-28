@@ -2,6 +2,7 @@ from copy import deepcopy
 from tkinter import Canvas, Misc
 
 from shape import Shape
+from interface.window import Window
 from vector3 import Vector3
 
 
@@ -55,13 +56,22 @@ class Viewport:
                 return False
         return True
 
-    def draw(self, window_min: Vector3, window_max: Vector3, display_file: list[Shape]):
+    def draw(self, window: Window, display_file: list[Shape]):
         self.canvas.delete("all")
+        window.ppc_transformation(display_file)
+
+        window_max = window.max_ppc
+        window_min = window.min_ppc
+
+        # window_min, window_max = self._viewport_transform(window_min, window_max, [deepcopy(window_min) + 100, deepcopy(window_max) - 100])
+
+        # self.canvas.create_rectangle(window_min.x, window_min.y, window_max.x, window_max.y, fill="red")
+
 
         for shape in display_file:
-            # if not self._inside_window(shape.points, window_min, window_max):
-            #     continue
-            points = shape.points
+            # if not self._
+            
+            points = shape.ppc_points
             points = self._viewport_transform(window_min, window_max, points)
             # print(f"{shape.points} --> {points}")
             if len(points) == 1:

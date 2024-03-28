@@ -8,6 +8,7 @@ from interface import Viewport, Window
 from shape import Line, Point, Wireframe, Shape
 from widgets import ShapeListbox, WindowControls
 from vector3 import Vector3
+from transformations import rotate, translation, scale, center
 
 VIEWPORT_DIMENSION = (600, 600)
 GEOMETRY = "1000x1000"
@@ -34,7 +35,7 @@ class App:
         @wraps(func)
         def wrapper(self: "App", *args, **kwargs):
             result = func(self, *args, **kwargs)
-            self.viewport.draw(self.window.min, self.window.max, self.display_file)
+            self.viewport.draw(self.window, self.display_file)
             return result
 
         return wrapper
@@ -52,6 +53,10 @@ class App:
         self.display_file.append(
             Wireframe([Vector3(x, y) for x, y in points], name=name, color=color)
         )
+
+    @redraw_viewport
+    def rotate_window(self):
+        rotate(45, Vector3(*center(self.window.points)), self.window.points)
 
     @redraw_viewport
     def zoom_out(self):
@@ -79,31 +84,31 @@ class App:
 
     @redraw_viewport
     def translation_up(self):
-        self.selected_shape.translation(0, 10)
+        translation(0, 10, self.selected_shape.points)
     
     @redraw_viewport
     def translation_down(self):
-        self.selected_shape.translation(0, -10)
+        translation(0, -10, self.selected_shape.points)
 
     @redraw_viewport
     def translation_right(self):
-        self.selected_shape.translation(10, 0)
+        translation(10, 0, self.selected_shape.points)
 
     @redraw_viewport
     def translation_left(self):
-        self.selected_shape.translation(-10, 0)
+        translation(-10, 0, self.selected_shape.points)
 
     @redraw_viewport
     def scale_zoom(self):
-        self.selected_shape.scale(1.2)
+        scale(1.2, self.selected_shape.points)
     
     @redraw_viewport
     def scale_out(self):
-        self.selected_shape.scale(0.8)
+        scale(0.8, self.selected_shape.points)
 
     @redraw_viewport
     def rotate(self, degree, x, y):
-        self.selected_shape.rotate(degree, Vector3(x, y, 1))
+        rotate(degree, Vector3(x, y, 1), self.selected_shape.points)
 
     @redraw_viewport
     def __update_selected_shape(self, event: Event, clear_selection: bool = False):
@@ -124,8 +129,10 @@ class App:
             self.selected_shape_old_color = self.selected_shape.color
             print("Color: %s" % self.selected_shape_old_color)
             self.selected_shape.color = "gold"
-            self.xvar.set(self.selected_shape.center[0])
-            self.yvar.set(self.selected_shape.center[1])
+            
+            cx, cy = center(self.selected_shape.points)
+            self.xvar.set(cx)
+            self.yvar.set(cy)
 
         print(f"Selected shape: {self.selected_shape}")
 
@@ -302,6 +309,7 @@ class App:
         ttk.Button(zoom_controls, text="Out", command=self.zoom_out).grid(
             column=1, row=3
         )
+        ttk.Button(zoom_controls, text="Rotate", command=self.rotate_window).grid(column=2, row=3)
 
         move_object_frame = ttk.Frame(window_control_frame, padding="3 30 3 3")
         move_object_frame.grid(column=0, row=9, columnspan=1)
