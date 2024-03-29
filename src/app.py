@@ -56,7 +56,7 @@ class App:
 
     @redraw_viewport
     def rotate_window(self):
-        rotate(45, Vector3(*center(self.window.points)), self.window.points)
+        rotate(float(self.window.step_var.get()), Vector3(*center(self.window.points)), self.window.points)
 
     @redraw_viewport
     def zoom_out(self):
