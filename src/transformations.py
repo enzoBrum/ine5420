@@ -42,7 +42,6 @@ def scale(factor: float, points: list[Vector3]) -> None:
     matrix = np.matmul(matrix, matrix_t2)
 
     for i in range(len(points)):
-        og_point = points[i]
         point = np.array([points[i].x, points[i].y, points[i].z])
         points[i] = Vector3.from_array(np.matmul(point, matrix))
 
