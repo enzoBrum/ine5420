@@ -1,5 +1,19 @@
 from functools import wraps
-from tkinter import Canvas, E, Event, Listbox, N, NS, NW, S, StringVar, Tk, Toplevel, W, ttk
+from tkinter import (
+    Canvas,
+    E,
+    Event,
+    Listbox,
+    N,
+    NS,
+    NW,
+    S,
+    StringVar,
+    Tk,
+    Toplevel,
+    W,
+    ttk,
+)
 
 import sv_ttk
 
@@ -14,10 +28,6 @@ VIEWPORT_DIMENSION = (600, 600)
 GEOMETRY = "1000x1000"
 PROGRAM_NAME = "sistema básico de CG 2D"
 
-"""
-TODO:
-    - mudar  código do App para outras classes em widgets/
-"""
 
 class App:
     window: Window
@@ -46,7 +56,9 @@ class App:
 
     @redraw_viewport
     def add_line(self, x1, y1, x2, y2, name, color):
-        self.display_file.append(Line([Vector3(x1, y1), Vector3(x2, y2)], name=name, color=color))
+        self.display_file.append(
+            Line([Vector3(x1, y1), Vector3(x2, y2)], name=name, color=color)
+        )
 
     @redraw_viewport
     def add_wireframe(self, points, name, color):
@@ -56,7 +68,11 @@ class App:
 
     @redraw_viewport
     def rotate_window(self):
-        rotate(float(self.window.step_var.get()), Vector3(*center(self.window.points)), self.window.points)
+        rotate(
+            float(self.window.step_var.get()),
+            Vector3(*center(self.window.points)),
+            self.window.points,
+        )
 
     @redraw_viewport
     def zoom_out(self):
@@ -85,7 +101,7 @@ class App:
     @redraw_viewport
     def translation_up(self):
         translation(0, 10, self.selected_shape.points)
-    
+
     @redraw_viewport
     def translation_down(self):
         translation(0, -10, self.selected_shape.points)
@@ -101,7 +117,7 @@ class App:
     @redraw_viewport
     def scale_zoom(self):
         scale(1.2, self.selected_shape.points)
-    
+
     @redraw_viewport
     def scale_out(self):
         scale(0.8, self.selected_shape.points)
@@ -119,17 +135,19 @@ class App:
                 self.xvar.set(0)
                 self.yvar.set(0)
             return
-        
 
         index = event.widget.curselection()
         if index:
             if self.selected_shape:
                 self.selected_shape.color = self.selected_shape_old_color
-            self.selected_shape = self.display_file.get_shape_by_id(event.widget.get(index[0]))
+
+            self.selected_shape = self.display_file.get_shape_by_id(
+                event.widget.get(index[0])
+            )
             self.selected_shape_old_color = self.selected_shape.color
             print("Color: %s" % self.selected_shape_old_color)
             self.selected_shape.color = "gold"
-            
+
             cx, cy = center(self.selected_shape.points)
             self.xvar.set(cx)
             self.yvar.set(cy)
@@ -153,15 +171,17 @@ class App:
         scrollbar.grid(column=1, row=2, sticky=(N, S, W))
         listbox.configure(yscrollcommand=scrollbar.set)
         listbox.bind("<<ListboxSelect>>", self.__update_selected_shape)
-        
+
         button_frame = ttk.Frame(menu_frame)
         button_frame.grid(column=0, row=3)
         ttk.Button(button_frame, text="Add Object", command=self.__add_object).grid(
             column=0, row=0
         )
-        ttk.Button(button_frame, text="Clear Selection", command=lambda: self.__update_selected_shape(None, clear_selection=True)).grid(
-            column=1, row=0, sticky="w"
-        )
+        ttk.Button(
+            button_frame,
+            text="Clear Selection",
+            command=lambda: self.__update_selected_shape(None, clear_selection=True),
+        ).grid(column=1, row=0, sticky="w")
 
     def __add_object(self):
         frame = Toplevel(self.root)
@@ -198,16 +218,20 @@ class App:
             ),
         ).grid(row=6, columnspan=2, padx=10, pady=5)
 
-    def __add_selected_object(self, type_obj: str, name: str, color: str, shape_frame: ttk.Frame):
-        row = 4 if type_obj == 'Line' else 2
-        column = 0 if type_obj == 'Wireframe' else 1
-        if name == '':
+    def __add_selected_object(
+        self, type_obj: str, name: str, color: str, shape_frame: ttk.Frame
+    ):
+        row = 4 if type_obj == "Line" else 2
+        column = 0 if type_obj == "Wireframe" else 1
+        if name == "":
             ttk.Label(shape_frame, text="Digit a name.").grid(row=row, column=column)
             return
-        
-        colors = ['black', 'yellow', 'blue', 'green', 'red', 'orange', 'purple', 'gray']
+
+        colors = ["black", "yellow", "blue", "green", "red", "orange", "purple", "gray"]
         if color not in colors:
-            ttk.Label(shape_frame, text=f'Digit an available color: {", ".join(colors)}').grid(row=row, column=column)
+            ttk.Label(
+                shape_frame, text=f'Digit an available color: {", ".join(colors)}'
+            ).grid(row=row, column=column)
             return
 
         try:
@@ -225,12 +249,15 @@ class App:
                 points = str(shape_frame.winfo_children()[1].get())
                 self.add_wireframe(eval(f"[{points}]"), name, color)
         except:
-            error_message = "X's and Y's must be a number." if type_obj in ['Line', 'Point'] else \
-                            "Format is incorrect or X's and Y's are not a number."
+            error_message = (
+                "X's and Y's must be a number."
+                if type_obj in ["Line", "Point"]
+                else "Format is incorrect or X's and Y's are not a number."
+            )
             ttk.Label(shape_frame, text=error_message).grid(row=row, column=column)
-        
+
         self.__update_shape_frame(shape_frame, type_obj)
-            
+
     def __update_shape_frame(self, shape_frame: ttk.Frame, type_obj: str):
         for widget in shape_frame.winfo_children():
             widget.destroy()
@@ -267,7 +294,6 @@ class App:
             entry_points = ttk.Entry(shape_frame)
             entry_points.grid(row=1, column=0, padx=5, pady=5)
 
-    
     def __create_window_controls(self, menu_frame: ttk.Frame):
         window_control_frame = ttk.Frame(
             menu_frame, padding="12 -3 12 12", border=3, borderwidth=3, relief="groove"
@@ -309,15 +335,29 @@ class App:
         ttk.Button(zoom_controls, text="Out", command=self.zoom_out).grid(
             column=1, row=3
         )
-        ttk.Button(zoom_controls, text="Rotate", command=self.rotate_window).grid(column=2, row=3)
+        ttk.Button(zoom_controls, text="Rotate", command=self.rotate_window).grid(
+            column=2, row=3
+        )
 
         move_object_frame = ttk.Frame(window_control_frame, padding="3 30 3 3")
         move_object_frame.grid(column=0, row=9, columnspan=1)
-        ttk.Label(move_object_frame, text="Object Translation:").grid(row=0, column=0, padx=5)
-        ttk.Button(move_object_frame, text="Up", command=self.translation_up).grid(row=1, column=2, sticky="ns")
-        ttk.Button(move_object_frame, text="Left", command=self.translation_left).grid(row=2, column=1, sticky="w",)
-        ttk.Button(move_object_frame, text="Right", command=self.translation_right).grid(row=2, column=3, sticky="e")
-        ttk.Button(move_object_frame, text="Down", command=self.translation_down).grid(row=2, column=2)
+        ttk.Label(move_object_frame, text="Object Translation:").grid(
+            row=0, column=0, padx=5
+        )
+        ttk.Button(move_object_frame, text="Up", command=self.translation_up).grid(
+            row=1, column=2, sticky="ns"
+        )
+        ttk.Button(move_object_frame, text="Left", command=self.translation_left).grid(
+            row=2,
+            column=1,
+            sticky="w",
+        )
+        ttk.Button(
+            move_object_frame, text="Right", command=self.translation_right
+        ).grid(row=2, column=3, sticky="e")
+        ttk.Button(move_object_frame, text="Down", command=self.translation_down).grid(
+            row=2, column=2
+        )
 
         scale_frame = ttk.Frame(window_control_frame, padding="3 30 3 3")
         scale_frame.grid(column=0, row=11, columnspan=1)
@@ -325,12 +365,21 @@ class App:
         ttk.Button(scale_frame, text="+", command=self.scale_zoom).grid(row=0, column=1)
         ttk.Button(scale_frame, text="-", command=self.scale_out).grid(row=0, column=2)
 
-        object_rotation_frame = ttk.Frame(window_control_frame, padding="10 -3 10 10", 
-                                         border=3, borderwidth=3, relief="groove")
+        object_rotation_frame = ttk.Frame(
+            window_control_frame,
+            padding="10 -3 10 10",
+            border=3,
+            borderwidth=3,
+            relief="groove",
+        )
         object_rotation_frame.grid(column=0, row=13, pady=12)
-        ttk.Label(object_rotation_frame, text="Rotation").grid(row=0, column=0, sticky="n")
+        ttk.Label(object_rotation_frame, text="Rotation").grid(
+            row=0, column=0, sticky="n"
+        )
         ttk.Label(object_rotation_frame, text="Degree:").grid(row=1, column=0)
-        degree = ttk.Entry(object_rotation_frame, width=10)
+
+        degree_var = StringVar(value="45")
+        degree = ttk.Entry(object_rotation_frame, width=10, textvariable=degree_var)
         degree.grid(row=1, column=1, padx=5, pady=5)
 
         ttk.Label(object_rotation_frame, text="Rotation point:").grid(row=2, column=0)
@@ -347,10 +396,13 @@ class App:
         entry_y = ttk.Entry(object_rotation_frame, textvariable=self.yvar, width=10)
         entry_y.grid(row=4, column=1)
 
-        ttk.Button(object_rotation_frame, text='Rotate', command=lambda: self.rotate(float(degree.get()), float(entry_x.get()), float(entry_y.get()))).grid(row=5, column=0)
-
-
-
+        ttk.Button(
+            object_rotation_frame,
+            text="Rotate",
+            command=lambda: self.rotate(
+                float(degree_var.get()), float(entry_x.get()), float(entry_y.get())
+            ),
+        ).grid(row=5, column=0)
 
     def __create_left_menu(self):
         menu_frame = ttk.Frame(
@@ -387,21 +439,24 @@ class App:
         ttk.Label(menu_frame, text="Menu de Funções").grid(column=0, row=0, sticky="n")
 
         self.shape_listbox = ShapeListbox(
-            menu_frame, 
-            self.display_file, 
-            lambda: self.viewport.draw(self.window.min, self.window.max, self.display_file), 
-            0, 
-            2
+            menu_frame,
+            self.display_file,
+            lambda: self.viewport.draw(
+                self.window.min, self.window.max, self.display_file
+            ),
+            0,
+            2,
         )
 
         self.window_controls = WindowControls(
             menu_frame,
             self.window,
-            lambda: self.viewport.draw(self.window.min, self.window.max, self.display_file),
+            lambda: self.viewport.draw(
+                self.window.min, self.window.max, self.display_file
+            ),
             0,
-            4
+            4,
         )
-
 
     def __init__(self):
         self.root = Tk()
@@ -422,8 +477,8 @@ class App:
         # self.__test()
         self.__create_viewport_and_log()
 
-        self.add_line(100,100,500,500, "Foo", "blue")
-        self.add_line(300,400,500,500, "Bar", "red")
+        self.add_line(100, 100, 500, 500, "Foo", "blue")
+        self.add_line(300, 400, 500, 500, "Bar", "red")
 
     def run(self):
         self.root.mainloop()
