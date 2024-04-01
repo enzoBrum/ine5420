@@ -5,4 +5,4 @@ Para rodar o trabalho use o seguinte comando:
 make run
 ```
 
-É necessário que o tkinter
+É necessário que o tkinter esteja instalado.
