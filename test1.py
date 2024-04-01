@@ -1,20 +1,22 @@
 import tkinter as tk
-import random
 
-def click_handler(event):
-    event.widget.itemconfigure("current", fill="white")
+
+def callback():
+    detail = {1}
+    print("detail: %s" % detail)
+    print(type(dict(detail)))
+
+
+def create_custom_event():
+    root.event_generate("<<Custom>>")
+
 
 root = tk.Tk()
-canvas = tk.Canvas(root, bg="bisque", width=400, height=400)
-canvas.pack(fill="both", expand=True)
 
-canvas.bind("<1>", click_handler)
-for i in range(100):
-    x = random.randint(0, 350)
-    y = random.randint(0, 350)
-    color = random.choice(("red", "orange", "green", "blue"))
-    width = random.randint(25, 50)
-    height = random.randint(25, 50)
-    canvas.create_rectangle(x, y, x+width, y+height, fill=color)
+button = tk.Button(root, text="click me", command=create_custom_event)
+button.pack(side="top", padx=20, pady=20)
+
+cmd = root.register(callback)
+root.tk.call("bind", root, "<<Custom>>", cmd + " %d")
 
 root.mainloop()

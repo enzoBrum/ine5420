@@ -1,0 +1,10 @@
+class Events:
+    MOVE_WINDOW = "<<MoveWindow>>"
+    MOVE_SHAPE = "<<MoveShape>>"
+    ZOOM = "<<Zoom>>"
+    ROTATE_WINDOW = "<<RotateWindow>>"
+    ROTATE_SHAPE = "<<RotateShape>>"
+    SCALE_SHAPE = "<<ScaleShape>>"
+    CLEAR_SHAPE_SELECTION = "<<ClearShapeSelection>>"
+    SELECT_SHAPE = "<<SelectShape>>"
+    ADD_SHAPE = "<<AddShape>>"

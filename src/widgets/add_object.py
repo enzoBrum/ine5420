@@ -1,33 +1,54 @@
-from tkinter import Toplevel, ttk, StringVar
+import json
+from tkinter import Frame, Toplevel, ttk, StringVar
 from typing import Callable
 
 from display_file import DisplayFile
 from vector3 import Vector3
 from shape import Point, Line, Wireframe
+from event import Events
+
 
 class AddObject:
     frame: Toplevel
-    display_file: DisplayFile
-    redraw_viewport_callback: Callable[[], None]
+    root: Frame
 
-    def __init__(self, display_file: DisplayFile, redraw_viewport_callback: Callable[[], None]):
-        self.display_file = display_file
-        self.redraw_viewport_callback = redraw_viewport_callback
+    def __init__(self, root: Frame):
         self.frame = None
+        self.root = root
 
     def add_point(self, x, y, name, color):
-        self.display_file.append(Point([Vector3(x, y)], name=name, color=color))
-        self.redraw_viewport_callback()
+        self.root.event_generate(
+            Events.ADD_SHAPE,
+            data=json.dumps(
+                {"type": "point", "points": [(x, y)], "name": name, "color": color}
+            ),
+        )
 
     def add_line(self, x1, y1, x2, y2, name, color):
-        self.display_file.append(Line([Vector3(x1, y1), Vector3(x2, y2)], name=name, color=color))
-        self.redraw_viewport_callback()
+        self.root.event_generate(
+            Events.ADD_SHAPE,
+            data=json.dumps(
+                {
+                    "type": "line",
+                    "points": [(x1, y1), (x2, y2)],
+                    "name": name,
+                    "color": color,
+                }
+            ),
+        )
 
     def add_wireframe(self, points, name, color):
-        self.display_file.append(
-            Wireframe([Vector3(x, y) for x, y in points], name=name, color=color)
+        self.root.event_generate(
+            Events.ADD_SHAPE,
+            data=json.dumps(
+                {
+                    "type": "wireframe",
+                    "points": list(points),
+                    "name": name,
+                    "color": color,
+                }
+            ),
         )
-        self.redraw_viewport_callback()
 
     def create_widget(self, root: ttk.Frame):
         self.frame = Toplevel(root)
@@ -36,7 +57,9 @@ class AddObject:
         shape_frame = ttk.Frame(self.frame)
         shape_frame.grid(row=4, columnspan=2, padx=10, pady=5)
 
-        ttk.Label(self.frame, text="Object Name:").grid(row=0, column=0, padx=10, pady=5)
+        ttk.Label(self.frame, text="Object Name:").grid(
+            row=0, column=0, padx=10, pady=5
+        )
         entry_name = ttk.Entry(self.frame)
         entry_name.grid(row=0, column=1, padx=10, pady=5)
 
@@ -64,16 +87,20 @@ class AddObject:
             ),
         ).grid(row=6, columnspan=2, padx=10, pady=5)
 
-    def __add_selected_object(self, type_obj: str, name: str, color: str, shape_frame: ttk.Frame):
-        row = 4 if type_obj == 'Line' else 2
-        column = 0 if type_obj == 'Wireframe' else 1
-        if name == '':
+    def __add_selected_object(
+        self, type_obj: str, name: str, color: str, shape_frame: ttk.Frame
+    ):
+        row = 4 if type_obj == "Line" else 2
+        column = 0 if type_obj == "Wireframe" else 1
+        if name == "":
             ttk.Label(shape_frame, text="Digit a name.").grid(row=row, column=column)
             return
-        
-        colors = ['black', 'yellow', 'blue', 'green', 'red', 'orange', 'purple', 'gray']
+
+        colors = ["black", "yellow", "blue", "green", "red", "orange", "purple", "gray"]
         if color not in colors:
-            ttk.Label(shape_frame, text=f'Digit an available color: {", ".join(colors)}').grid(row=row, column=column)
+            ttk.Label(
+                shape_frame, text=f'Digit an available color: {", ".join(colors)}'
+            ).grid(row=row, column=column)
             return
 
         try:
@@ -91,12 +118,15 @@ class AddObject:
                 points = str(shape_frame.winfo_children()[1].get())
                 self.add_wireframe(eval(f"[{points}]"), name, color)
         except:
-            error_message = "X's and Y's must be a number." if type_obj in ['Line', 'Point'] else \
-                            "Format is incorrect or X's and Y's are not a number."
+            error_message = (
+                "X's and Y's must be a number."
+                if type_obj in ["Line", "Point"]
+                else "Format is incorrect or X's and Y's are not a number."
+            )
             ttk.Label(shape_frame, text=error_message).grid(row=row, column=column)
-        
+
         self.__update_shape_frame(shape_frame, type_obj)
-            
+
     def __update_shape_frame(self, shape_frame: ttk.Frame, type_obj: str):
         for widget in shape_frame.winfo_children():
             widget.destroy()

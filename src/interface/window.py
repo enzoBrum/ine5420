@@ -9,9 +9,8 @@ from transformations import translation, rotate, center
 from math import degrees, atan2
 import numpy as np
 
+
 class Window:
-    step: float
-    step_var: StringVar
     points: list[Vector3]
     ppc_points: list[Vector3]
     """
@@ -27,18 +26,12 @@ class Window:
 
     def __init__(self, min: Vector3, max: Vector3):
         self.points = [
-            min, # (x0, y0)
-            Vector3(max.x, min.y), # (x1, y1)
-            max, # (x2, y2)
-            Vector3(min.x, max.y) # (x3, y3)
+            min,  # (x0, y0)
+            Vector3(max.x, min.y),  # (x1, y1)
+            max,  # (x2, y2)
+            Vector3(min.x, max.y),  # (x3, y3)
         ]
-
         self.ppc_points = deepcopy(self.points)
-        
-        self.step = 10.0
-        self.step_var = StringVar(value=str(10.0))
-
-        self.step_var.trace_add("write", self.set_step)
 
     def ppc_transformation(self, shapes: list[Shape]):
         wcx, wcy = center(self.points)
@@ -46,7 +39,7 @@ class Window:
         points = deepcopy(self.points)
         for shape in shapes:
             points += deepcopy(shape.points)
-                    
+
         translation(-wcx, -wcy, points)
 
         x = self.points[3].x - self.points[0].x
@@ -55,7 +48,6 @@ class Window:
 
         print(degree)
         rotate(degree, Vector3(wcx, wcy), points)
-
 
         i = 0
         for j in range(len(self.ppc_points)):
@@ -67,15 +59,14 @@ class Window:
                 shape.ppc_points[j] = points[i]
                 i += 1
 
-    
     @property
     def v_up(self) -> tuple[Vector3, Vector3]:
         return self.points[0], self.points[3]
-    
+
     @property
     def max(self) -> Vector3:
         return self.points[2]
-    
+
     @property
     def min(self) -> Vector3:
         return self.points[0]
@@ -83,23 +74,13 @@ class Window:
     @property
     def max_ppc(self) -> Vector3:
         return self.ppc_points[2]
-    
+
     @property
     def min_ppc(self) -> Vector3:
         return self.ppc_points[0]
 
-    def set_step(self, *args):
-        print(f"Alterando step da window para {self.step_var.get()}")
-
-        try:
-            self.step = float(self.step_var.get())
-        except ValueError:
-            print(
-                f"Erro ao setar step para {self.step_var.get()}!\nMantendo o valor {self.step}"
-            )
-
-    def zoom(self, mult: int):
-        step = self.step * mult
+    def zoom(self, mult: float, step: float):
+        step = step * mult
 
         final_max = self.max - step
         final_min = self.min + step
@@ -113,39 +94,41 @@ class Window:
         )
 
         self.points[0] += step
-        
+
         self.points[1].x -= step
         self.points[1].y += step
-        
+
         self.points[2] -= step
-        
+
         self.points[3].x += step
         self.points[3].y -= step
 
-        
-
-    def move(self, direction: str):
+    def move(self, direction: str, step: float):
         print(f"Movendo Window para {direction}")
         print(f"window max original: {self.max}\nwindow min original: {self.min}")
-        
-        vup = [self.points[3].x - self.points[0].x, self.points[3].y - self.points[0].y, 1]
+
+        vup = [
+            self.points[3].x - self.points[0].x,
+            self.points[3].y - self.points[0].y,
+            1,
+        ]
 
         # Normalize vup to reduce the numerical error
         vup_normalized = np.array(vup) / np.linalg.norm(vup)
-        
+
         # np.cross returns a vector perpendicular to the normalized vup and [0, 0, 1]
         # the vector [0, 0, 1] is penpendicular to axes x and y, so np.cross return
         # a vector thats is pendicular to vup, x, y and is multiply by the scalar step
         # to give a sensation to a unique direction
         if direction == "R":
-            displacement_vector = np.cross(vup_normalized, [0, 0, 1]) * self.step
+            displacement_vector = np.cross(vup_normalized, [0, 0, 1]) * step
         elif direction == "L":
-            displacement_vector = -np.cross(vup_normalized, [0, 0, 1]) * self.step
+            displacement_vector = -np.cross(vup_normalized, [0, 0, 1]) * step
         # Up and Down dont need np.cross
         elif direction == "U":
-            displacement_vector = vup_normalized * self.step
+            displacement_vector = vup_normalized * step
         else:
-            displacement_vector = -vup_normalized * self.step
+            displacement_vector = -vup_normalized * step
 
         print(displacement_vector)
         # Apply the displacement_vector for window points
