@@ -1,28 +1,16 @@
 from functools import wraps
 import json
-from tkinter import (
-    E,
-    Event,
-    Listbox,
-    N,
-    S,
-    StringVar,
-    Tk,
-    Toplevel,
-    W,
-    ttk,
-)
+from tkinter import E, Event, Listbox, N, S, StringVar, Tk, Toplevel, W, ttk
 import traceback
 from typing import Callable
 
-
 from display_file import DisplayFile
-from interface import Viewport, Window
-from shape import Line, Point, Wireframe, Shape
-from widgets import ShapeListbox, WindowControls
-from vector3 import Vector3
-from transformations import rotate, translation, scale, center
 from event import Events
+from interface import Viewport, Window
+from shape import Line, Point, Shape, Wireframe
+from transformations import center, rotate, scale, translation
+from vector3 import Vector3
+from widgets import ShapeListbox, WindowControls
 
 VIEWPORT_DIMENSION = (600, 600)
 GEOMETRY = "1000x1000"
@@ -86,22 +74,6 @@ class App:
             traceback.print_exc()
 
     @redraw_viewport
-    def add_point(self, x, y, name, color):
-        self.display_file.append(Point([Vector3(x, y)], name=name, color=color))
-
-    @redraw_viewport
-    def add_line(self, x1, y1, x2, y2, name, color):
-        self.display_file.append(
-            Line([Vector3(x1, y1), Vector3(x2, y2)], name=name, color=color)
-        )
-
-    @redraw_viewport
-    def add_wireframe(self, points, name, color):
-        self.display_file.append(
-            Wireframe([Vector3(x, y) for x, y in points], name=name, color=color)
-        )
-
-    @redraw_viewport
     def rotate_window(self, e):
         rotate(
             float(self.window_controls.window_step.get()),
@@ -123,6 +95,11 @@ class App:
 
     @redraw_viewport
     def translation(self, direction: str):
+        old_cx, old_cy = center(self.selected_shape.points)
+        xvar = float(self.window_controls.xvar.get())
+        yvar = float(self.window_controls.yvar.get())
+        using_object_center = abs(old_cx - xvar) < 1e-6 and abs(old_cy - yvar) < 1e-6
+
         match direction:
             case "U":
                 translation(0, 10, self.selected_shape.points)
@@ -132,6 +109,11 @@ class App:
                 translation(10, 0, self.selected_shape.points)
             case "L":
                 translation(-10, 0, self.selected_shape.points)
+
+        if using_object_center:
+            new_cx, new_cy = center(self.selected_shape.points)
+            self.window_controls.xvar.set(new_cx)
+            self.window_controls.yvar.set(new_cy)
 
     @redraw_viewport
     def scale(self, factor: str):
