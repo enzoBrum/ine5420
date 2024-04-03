@@ -17,6 +17,12 @@ VIEWPORT_DIMENSION = (600, 600)
 GEOMETRY = "1000x1000"
 PROGRAM_NAME = "sistema básico de CG 2D"
 
+"""
+TODO: suportar índices absolutos no object file
+TODO: preencher polígono com cor (canvas.create_polygon?)
+TODO: clipping de polígono
+"""
+
 
 class App:
     window: Window
@@ -220,7 +226,8 @@ class App:
 
         self.selected_shape = None
         self.window = Window(
-            Vector3(0, 0), Vector3(VIEWPORT_DIMENSION[0], VIEWPORT_DIMENSION[1])
+            Vector3(10, 10),
+            Vector3(VIEWPORT_DIMENSION[0] - 10, VIEWPORT_DIMENSION[1] - 10),
         )
         self.frame = ttk.Frame(self.root, padding="3 3 12 12")
         self.frame.grid(column=0, row=0, sticky=(N, W, E, S))
@@ -229,11 +236,6 @@ class App:
         self.__create_left_menu()
         self.__create_viewport_and_log()
         self.__bind_events()
-
-        # self.display_file = self.descritor_obj.load()
-
-        # f = filedialog.askopenfile("r")
-        # print(f.read())
 
         self.add_shape(
             json.dumps(

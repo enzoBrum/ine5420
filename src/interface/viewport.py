@@ -3,7 +3,10 @@ from tkinter import Canvas, Misc
 
 from shape import Shape
 from interface.window import Window
+from shape.line import Line
+from shape.point import Point
 from vector3 import Vector3
+from clipping import cohen_sutherland, point_clipping, liang_barsky
 
 
 class Viewport:
@@ -37,13 +40,17 @@ class Viewport:
         self, window_min: Vector3, window_max: Vector3, points: list[Vector3]
     ) -> list[Vector3]:
         converted_points = deepcopy(points)
+        window_max += 10
+        window_min -= 10
         for point in converted_points:
             point.x = ((point.x - window_min.x) / (window_max.x - window_min.x)) * (
-                self._max.x - self._min.x
+                self._max.x - self._min.y
             )
             point.y = (1 - (point.y - window_min.y) / (window_max.y - window_min.y)) * (
                 self._max.y - self._min.y
             )
+        window_min += 10
+        window_max -= 10
 
         return converted_points
 
@@ -58,22 +65,36 @@ class Viewport:
 
     def draw(self, window: Window, display_file: list[Shape]):
         self.canvas.delete("all")
+        self.canvas.create_rectangle(
+            10,
+            10,
+            self._max.x - self._min.x - 10,
+            self._max.y - self._min.y - 10,
+            outline="red",
+        )
         window.ppc_transformation(display_file)
 
         window_max = window.max_ppc
         window_min = window.min_ppc
 
-        # window_min, window_max = self._viewport_transform(window_min, window_max, [deepcopy(window_min) + 100, deepcopy(window_max) - 100])
-
-        # self.canvas.create_rectangle(window_min.x, window_min.y, window_max.x, window_max.y, fill="red")
-
-
+        points = []
+        lines = []
+        wireframes = []
         for shape in display_file:
-            # if not self._
-            
+            if isinstance(shape, Point):
+                points.append(shape)
+            elif isinstance(shape, Line):
+                lines.append(shape)
+            else:
+                wireframes.append(shape)
+
+        points = point_clipping(points, window_max, window_min)
+        # lines = cohen_sutherland(lines, window_max, window_min)
+        lines = liang_barsky(lines, window_max, window_min)
+
+        for shape in points + lines + wireframes:
             points = shape.ppc_points
             points = self._viewport_transform(window_min, window_max, points)
-            # print(f"{shape.points} --> {points}")
             if len(points) == 1:
                 point = points[0]
                 self.canvas.create_oval(

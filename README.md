@@ -5,7 +5,7 @@ Para rodar o trabalho use o seguinte comando:
 make run
 ```
 
-É necessário que o tkinter esteja instalado.
+É necessário que o tkinter esteja instalado e que a versão do python maior ou igual à 3.10
 
 
 ## Salvar e carregar objetos
