@@ -8,3 +8,5 @@ class Events:
     CLEAR_SHAPE_SELECTION = "<<ClearShapeSelection>>"
     SELECT_SHAPE = "<<SelectShape>>"
     ADD_SHAPE = "<<AddShape>>"
+    SAVE_SHAPES = "<<SaveShapes>>"
+    LOAD_SHAPES = "<<LoadShapes>>"

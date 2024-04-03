@@ -9,6 +9,7 @@ import numpy.typing as npt
 from vector3 import Vector3
 from copy import deepcopy
 
+
 class Shape(ABC):
     color: str
     name: str
@@ -26,4 +27,3 @@ class Shape(ABC):
 
     def __str__(self) -> str:
         return f"{self.shape_name}[{self.name}]"
-

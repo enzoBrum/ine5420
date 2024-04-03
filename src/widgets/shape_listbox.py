@@ -1,4 +1,5 @@
-from tkinter import Event, StringVar, Tk, ttk, Listbox, N, S, E, W
+from fileinput import filename
+from tkinter import Event, StringVar, Tk, filedialog, ttk, Listbox, N, S, E, W
 from typing import Callable
 from event import Events
 from display_file import DisplayFile
@@ -51,6 +52,12 @@ class ShapeListbox:
             text="Clear Selection",
             command=lambda: self.__update_selected_shape(None, clear_selection=True),
         ).grid(column=1, row=0, sticky="w")
+        ttk.Button(button_frame, text="Save", command=self.save_shapes).grid(
+            column=0, row=1
+        )
+        ttk.Button(button_frame, text="Load", command=self.load_shapes).grid(
+            column=1, row=1, sticky="w"
+        )
 
     def __update_selected_shape(self, event: Event, clear_selection: bool = False):
         if clear_selection:
@@ -62,3 +69,13 @@ class ShapeListbox:
             self.root.event_generate(
                 Events.SELECT_SHAPE, data=event.widget.get(index[0])
             )
+
+    def save_shapes(self):
+        filename = filedialog.asksaveasfilename()
+        if filename:
+            self.root.event_generate(Events.SAVE_SHAPES, data=filename)
+
+    def load_shapes(self):
+        filename = filedialog.askopenfilename()
+        if filename:
+            self.root.event_generate(Events.LOAD_SHAPES, data=filename)

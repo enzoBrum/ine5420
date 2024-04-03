@@ -1,6 +1,6 @@
 from functools import wraps
 import json
-from tkinter import E, Event, Listbox, N, S, StringVar, Tk, Toplevel, W, ttk
+from tkinter import E, Event, Listbox, N, S, StringVar, Tk, Toplevel, W, ttk, filedialog
 import traceback
 from typing import Callable
 
@@ -11,6 +11,7 @@ from shape import Line, Point, Shape, Wireframe
 from transformations import center, rotate, scale, translation
 from vector3 import Vector3
 from widgets import ShapeListbox, WindowControls
+from descritor_obj import DescritorOBJ
 
 VIEWPORT_DIMENSION = (600, 600)
 GEOMETRY = "1000x1000"
@@ -21,7 +22,6 @@ class App:
     window: Window
     viewport: Viewport
     display_file: DisplayFile
-    display_file_str_var: StringVar
     root: Tk
     frame: ttk.Frame
     selected_shape: Shape | None
@@ -72,6 +72,19 @@ class App:
             self.shape_listbox.shapes_str_var.set(self.display_file._shapes)
         except:
             traceback.print_exc()
+
+    def save_shapes(self, filename):
+        if self.selected_shape:
+            self.selected_shape.color = self.selected_shape_old_color
+        DescritorOBJ.save(self.display_file, filename)
+
+        if self.selected_shape:
+            self.selected_shape.color = "gold"
+
+    @redraw_viewport
+    def load_shapes(self, filename):
+        self.display_file = DescritorOBJ.load(filename)
+        self.shape_listbox.shapes_str_var.set(self.display_file._shapes)
 
     @redraw_viewport
     def rotate_window(self, e):
@@ -195,6 +208,8 @@ class App:
         self.bind_event(self.update_selected_shape, Events.SELECT_SHAPE, True)
         self.bind_event(self.clear_selected_shape, Events.CLEAR_SHAPE_SELECTION, False)
         self.bind_event(self.add_shape, Events.ADD_SHAPE, True)
+        self.bind_event(self.save_shapes, Events.SAVE_SHAPES, True)
+        self.bind_event(self.load_shapes, Events.LOAD_SHAPES, True)
 
     def __init__(self):
         self.root = Tk()
@@ -215,26 +230,31 @@ class App:
         self.__create_viewport_and_log()
         self.__bind_events()
 
-        # self.add_shape(
-        #     json.dumps(
-        #         {
-        #             "type": "line",
-        #             "points": [(100, 100), (500, 500)],
-        #             "name": "Foo",
-        #             "color": "blue",
-        #         }
-        #     )
-        # )
-        # self.add_shape(
-        #     json.dumps(
-        #         {
-        #             "type": "line",
-        #             "points": [(300, 400), (500, 500)],
-        #             "name": "Bar",
-        #             "color": "red",
-        #         }
-        #     )
-        # )
+        # self.display_file = self.descritor_obj.load()
+
+        # f = filedialog.askopenfile("r")
+        # print(f.read())
+
+        self.add_shape(
+            json.dumps(
+                {
+                    "type": "line",
+                    "points": [(100, 100), (500, 500)],
+                    "name": "Foo",
+                    "color": "blue",
+                }
+            )
+        )
+        self.add_shape(
+            json.dumps(
+                {
+                    "type": "line",
+                    "points": [(300, 400), (500, 500)],
+                    "name": "Bar",
+                    "color": "red",
+                }
+            )
+        )
 
     def run(self):
         self.root.mainloop()
