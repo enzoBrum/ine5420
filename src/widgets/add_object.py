@@ -1,16 +1,26 @@
 import json
-from tkinter import Frame, Toplevel, ttk, StringVar
+from tkinter import Frame, StringVar, Toplevel, ttk
 from typing import Callable
 
 from display_file import DisplayFile
-from vector3 import Vector3
-from shape import Point, Line, Wireframe
 from event import Events
+from shape import Line, Point, Wireframe
+from vector3 import Vector3
 
 
 class AddObject:
     frame: Toplevel
     root: Frame
+    color_hex_name: dict[str, str] = {
+        "black": "#000000",
+        "red": "#ff0000",
+        "green": "#00ff00",
+        "blue": "#0000ff",
+        "orange": "#FFA500",
+        "pink": "#FFC0CB",
+        "purple": "#800080",
+        "gray": "#808080",
+    }
 
     def __init__(self, root: Frame):
         self.frame = None
@@ -96,12 +106,19 @@ class AddObject:
             ttk.Label(shape_frame, text="Digit a name.").grid(row=row, column=column)
             return
 
-        colors = ["black", "yellow", "blue", "green", "red", "orange", "purple", "gray"]
-        if color not in colors:
+        if color not in self.color_hex_name and (
+            color[0] != "#" or len(color) != 7
+        ):  #  len(color) é 7, se a cor for hexadecimal
             ttk.Label(
-                shape_frame, text=f'Digit an available color: {", ".join(colors)}'
+                shape_frame,
+                text=f'Digit an available color: {", ".join(self.color_hex_name.keys())}\nOr use a hex value, like: #00ff0f',
             ).grid(row=row, column=column)
             return
+
+        if color[0] != "#":
+            color = self.color_hex_name[color]
+        else:
+            self.color_hex_name[color] = color
 
         try:
             if type_obj == "Point":

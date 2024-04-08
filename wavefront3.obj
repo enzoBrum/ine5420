@@ -1,0 +1,37 @@
+mtllib wavefront3.mtl
+
+v 50.0 50.0 1.0
+v 100.0 100.0 1.0
+v 110 120 1
+v 110 420 1
+v 300.0 400.0 1.0
+v 410 170 1
+v 410 420 1
+v 500.0 500.0 1.0
+v 1000.0 100.0 1.0
+v 1000.0 1000.0 1.0
+
+o Foo
+usemtl blue
+l 2 8
+
+o Bar
+usemtl red
+l 5 8
+
+o Foo-1
+usemtl #abcdef
+l 1 10
+
+o Foo-2
+usemtl blue
+l 2 9
+
+o Foo
+usemtl green
+p 1
+
+o Foo
+usemtl purple
+f 3 4 7 6
+

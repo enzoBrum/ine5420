@@ -55,3 +55,35 @@ class Vector3:
         cls, arr: npt.NDArray[np.float32] | tuple[float, float, float]
     ) -> "Vector3":
         return Vector3(arr[0], arr[1], arr[2])
+
+    def __hash__(self) -> int:
+        return hash((self.x, self.y, self.z))
+
+    def __eq__(self, __value: object) -> bool:
+        if isinstance(__value, Vector3):
+            return self.x == __value.x and self.y == __value.y and self.z == __value.z
+        else:
+            self.x == __value[0] and self.y == __value[1] and self.z == __value[2]
+
+    def __ne__(self, __value: object) -> bool:
+        return not self.__eq__(__value)
+
+    def __lt__(self, other: object) -> bool:
+        if isinstance(other, Vector3):
+            return (self.x, self.y, self.z) < (other.x, other.y, other.z)
+        return (self.x, self.y, self.z) < other
+
+    def __le__(self, other: object) -> bool:
+        if isinstance(other, Vector3):
+            return (self.x, self.y, self.z) <= (other.x, other.y, other.z)
+        return (self.x, self.y, self.z) < -other
+
+    def __gt__(self, other: object) -> bool:
+        if isinstance(other, Vector3):
+            return (self.x, self.y, self.z) > (other.x, other.y, other.z)
+        return (self.x, self.y, self.z) > other
+
+    def __ge__(self, other: object) -> bool:
+        if isinstance(other, Vector3):
+            return (self.x, self.y, self.z) >= (other.x, other.y, other.z)
+        return (self.x, self.y, self.z) >= other

@@ -1,12 +1,12 @@
 from copy import deepcopy
 from tkinter import Canvas, Misc
 
-from shape import Shape
+from clipping import cohen_sutherland, liang_barsky, point_clipping
 from interface.window import Window
+from shape import Shape
 from shape.line import Line
 from shape.point import Point
 from vector3 import Vector3
-from clipping import cohen_sutherland, point_clipping, liang_barsky
 
 
 class Viewport:
@@ -89,8 +89,8 @@ class Viewport:
                 wireframes.append(shape)
 
         points = point_clipping(points, window_max, window_min)
-        # lines = cohen_sutherland(lines, window_max, window_min)
-        lines = liang_barsky(lines, window_max, window_min)
+        lines = cohen_sutherland(lines, window_max, window_min)
+        # lines = liang_barsky(lines, window_max, window_min)
 
         for shape in points + lines + wireframes:
             points = shape.ppc_points

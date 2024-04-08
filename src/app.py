@@ -1,9 +1,10 @@
 from functools import wraps
 import json
-from tkinter import E, Event, Listbox, N, S, StringVar, Tk, Toplevel, W, ttk, filedialog
+from tkinter import E, Event, Listbox, N, S, StringVar, Tk, Toplevel, W, filedialog, ttk
 import traceback
 from typing import Callable
 
+from descritor_obj import DescritorOBJ
 from display_file import DisplayFile
 from event import Events
 from interface import Viewport, Window
@@ -11,7 +12,6 @@ from shape import Line, Point, Shape, Wireframe
 from transformations import center, rotate, scale, translation
 from vector3 import Vector3
 from widgets import ShapeListbox, WindowControls
-from descritor_obj import DescritorOBJ
 
 VIEWPORT_DIMENSION = (600, 600)
 GEOMETRY = "1000x1000"
@@ -63,6 +63,18 @@ class App:
 
             points = [Vector3(x, y) for x, y in data["points"]]
             name = data["name"]
+
+            idx = 1
+            while (
+                self.display_file.get_shape_by_id(f"{data['type'].title()}[{name}]")
+                is not None
+            ):
+                if name.endswith(f"-{idx-1}"):
+                    name = name.replace(f"-{idx-1}", f"-{idx}")
+                else:
+                    name += f"-{idx}"
+                idx += 1
+
             color = data["color"]
             shape = None
             match data["type"]:
@@ -82,14 +94,21 @@ class App:
     def save_shapes(self, filename):
         if self.selected_shape:
             self.selected_shape.color = self.selected_shape_old_color
-        DescritorOBJ.save(self.display_file, filename)
+        DescritorOBJ.save(
+            self.display_file, self.shape_listbox.add_object.color_hex_name, filename
+        )
 
         if self.selected_shape:
             self.selected_shape.color = "gold"
 
     @redraw_viewport
     def load_shapes(self, filename):
-        self.display_file = DescritorOBJ.load(filename)
+        self.display_file, hex_color_names = DescritorOBJ.load(filename)
+
+        names_color_hex = {
+            name: color_hex for color_hex, name in hex_color_names.items()
+        }
+        self.shape_listbox.add_object.color_hex_name |= names_color_hex
         self.shape_listbox.shapes_str_var.set(self.display_file._shapes)
 
     @redraw_viewport
@@ -243,7 +262,7 @@ class App:
                     "type": "line",
                     "points": [(100, 100), (500, 500)],
                     "name": "Foo",
-                    "color": "blue",
+                    "color": self.shape_listbox.add_object.color_hex_name["blue"],
                 }
             )
         )
@@ -253,7 +272,7 @@ class App:
                     "type": "line",
                     "points": [(300, 400), (500, 500)],
                     "name": "Bar",
-                    "color": "red",
+                    "color": self.shape_listbox.add_object.color_hex_name["red"],
                 }
             )
         )

@@ -1,18 +1,25 @@
-o point1
-usemtl red
-v 33.0 130.0 1.0
-p -1
+mtllib wavefront2.mtl
 
-o line1
+v 50.0 50.0 1
+v 100 100 1
+v 300 400 1
+v 500 500 1
+v 1000.0 100.0 1
+v 1000.0 1000.0 1
+
+o Foo
 usemtl blue
-v 150.0 200.0 1.0
-v 200.0 100.0 1.0
-l -2 -1
+l 2 4
 
-o triangle1
-usemtl yellow
-v 200.0 400.0 1.0
-v 300.0 300.0 1.0
-v 100.0 300.0 1.0
-f -3 -2 -1
+o Bar
+usemtl red
+l 3 4
+
+o Foo-1
+usemtl #abcdef
+l 1 6
+
+o Foo-2
+usemtl blue
+l 2 5
 

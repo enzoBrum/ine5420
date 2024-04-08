@@ -1,8 +1,9 @@
 from fileinput import filename
-from tkinter import Event, StringVar, Tk, filedialog, ttk, Listbox, N, S, E, W
+from tkinter import E, Event, Listbox, N, S, StringVar, Tk, W, filedialog, ttk
 from typing import Callable
-from event import Events
+
 from display_file import DisplayFile
+from event import Events
 from shape import Shape
 
 from .add_object import AddObject
@@ -71,11 +72,13 @@ class ShapeListbox:
             )
 
     def save_shapes(self):
-        filename = filedialog.asksaveasfilename()
+        filename = filedialog.asksaveasfilename(
+            filetypes=[("Wavefront Object", "*.obj")]
+        )
         if filename:
             self.root.event_generate(Events.SAVE_SHAPES, data=filename)
 
     def load_shapes(self):
-        filename = filedialog.askopenfilename()
+        filename = filedialog.askopenfilename(filetypes=[("Wavefront Object", "*.obj")])
         if filename:
             self.root.event_generate(Events.LOAD_SHAPES, data=filename)

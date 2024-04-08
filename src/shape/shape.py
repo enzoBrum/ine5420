@@ -1,13 +1,9 @@
-from abc import ABC, abstractproperty
+from abc import ABC
+from copy import deepcopy
 from typing import Optional
 from uuid import uuid4
-from math import sin, cos, radians
-
-import numpy as np
-import numpy.typing as npt
 
 from vector3 import Vector3
-from copy import deepcopy
 
 
 class Shape(ABC):
