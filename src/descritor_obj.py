@@ -170,6 +170,7 @@ class DescritorOBJ:
                         # O __parse_shape já retorna o i incrementado
                     case _:
                         print(f"Ignoring wrong word: {first_word}")
+                        i += 1
 
         return DisplayFile(shapes), hex_color_name
 
