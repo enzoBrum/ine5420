@@ -1,7 +1,7 @@
 import json
 from tkinter import ttk
-
 from tkinter import StringVar
+
 from event import Events
 
 
@@ -29,7 +29,7 @@ class WindowControls:
 
         ttk.Label(self.frame, text="Window").grid(column=0, row=0, sticky="nw")
 
-        ttk.Label(self.frame, text="Passo:").grid(column=0, row=1, sticky="w")
+        ttk.Label(self.frame, text="Step/Rotation angle:").grid(column=0, row=1, sticky="w")
 
         ttk.Entry(self.frame, textvariable=self.window_step).grid(
             column=1, row=1, sticky="w"
