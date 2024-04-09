@@ -1,8 +1,10 @@
 from functools import wraps
 import json
-from tkinter import E, Event, Listbox, N, S, StringVar, Tk, Toplevel, W, filedialog, ttk
+from tkinter import E, N, S, Tk, W, ttk
 import traceback
 from typing import Callable
+
+import numpy as np
 
 from descritor_obj import DescritorOBJ
 from display_file import DisplayFile
@@ -138,15 +140,27 @@ class App:
         yvar = float(self.window_controls.yvar.get())
         using_object_center = abs(old_cx - xvar) < 1e-6 and abs(old_cy - yvar) < 1e-6
 
-        match direction:
-            case "U":
-                translation(0, 10, self.selected_shape.points)
-            case "D":
-                translation(0, -10, self.selected_shape.points)
-            case "R":
-                translation(10, 0, self.selected_shape.points)
-            case "L":
-                translation(-10, 0, self.selected_shape.points)
+        vup = [
+            self.window.points[3].x - self.window.points[0].x,
+            self.window.points[3].x - self.window.points[0].y,
+            1,
+        ]
+
+        vup_normalized = np.array(vup) / np.linalg.norm(vup)
+
+        step = 10
+        if direction == "R":
+            displacement_vector = np.cross(vup_normalized, [0, 0, 1]) * step
+        elif direction == "L":
+            displacement_vector = -np.cross(vup_normalized, [0, 0, 1]) * step
+        # Up and Down dont need np.cross
+        elif direction == "U":
+            displacement_vector = vup_normalized * step
+        else:
+            displacement_vector = -vup_normalized * step
+
+        for i in range(len(self.selected_shape.points)):
+            self.selected_shape.points[i] += Vector3.from_array(displacement_vector)
 
         if using_object_center:
             new_cx, new_cy = center(self.selected_shape.points)
@@ -256,7 +270,7 @@ class App:
         self.__create_viewport_and_log()
         self.__bind_events()
 
-        #self.add_shape(
+        # self.add_shape(
         #    json.dumps(
         #        {
         #            "type": "line",
@@ -265,8 +279,8 @@ class App:
         #            "color": self.shape_listbox.add_object.color_hex_name["blue"],
         #        }
         #    )
-        #)
-        #self.add_shape(
+        # )
+        # self.add_shape(
         #    json.dumps(
         #        {
         #            "type": "line",
@@ -275,7 +289,7 @@ class App:
         #            "color": self.shape_listbox.add_object.color_hex_name["red"],
         #        }
         #    )
-        #)
+        # )
 
     def run(self):
         self.root.mainloop()
