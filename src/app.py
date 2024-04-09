@@ -256,26 +256,26 @@ class App:
         self.__create_viewport_and_log()
         self.__bind_events()
 
-        self.add_shape(
-            json.dumps(
-                {
-                    "type": "line",
-                    "points": [(100, 100), (500, 500)],
-                    "name": "Foo",
-                    "color": self.shape_listbox.add_object.color_hex_name["blue"],
-                }
-            )
-        )
-        self.add_shape(
-            json.dumps(
-                {
-                    "type": "line",
-                    "points": [(300, 400), (500, 500)],
-                    "name": "Bar",
-                    "color": self.shape_listbox.add_object.color_hex_name["red"],
-                }
-            )
-        )
+        #self.add_shape(
+        #    json.dumps(
+        #        {
+        #            "type": "line",
+        #            "points": [(100, 100), (500, 500)],
+        #            "name": "Foo",
+        #            "color": self.shape_listbox.add_object.color_hex_name["blue"],
+        #        }
+        #    )
+        #)
+        #self.add_shape(
+        #    json.dumps(
+        #        {
+        #            "type": "line",
+        #            "points": [(300, 400), (500, 500)],
+        #            "name": "Bar",
+        #            "color": self.shape_listbox.add_object.color_hex_name["red"],
+        #        }
+        #    )
+        #)
 
     def run(self):
         self.root.mainloop()
