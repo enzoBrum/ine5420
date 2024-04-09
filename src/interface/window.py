@@ -1,18 +1,19 @@
 from copy import deepcopy
+from math import atan2, degrees
 from tkinter import StringVar
 import traceback
 
-from vector3 import Vector3
-from shape import Shape
-from transformations import translation, rotate, center
-
-from math import degrees, atan2
 import numpy as np
+
+from shape import Shape
+from transformations import center, rotate, translation
+from vector3 import Vector3
 
 
 class Window:
     points: list[Vector3]
     ppc_points: list[Vector3]
+    __og_points: list[Vector3]
     """
     (x3, y3) ------------------------- (x2, y2)
         |                                 |
@@ -31,7 +32,12 @@ class Window:
             max,  # (x2, y2)
             Vector3(min.x, max.y),  # (x3, y3)
         ]
+
+        self.__og_points = deepcopy(self.points)
         self.ppc_points = deepcopy(self.points)
+
+    def reset(self):
+        self.points = deepcopy(self.__og_points)
 
     def ppc_transformation(self, shapes: list[Shape]):
         wcx, wcy = center(self.points)

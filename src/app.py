@@ -112,6 +112,7 @@ class App:
         }
         self.shape_listbox.add_object.color_hex_name |= names_color_hex
         self.shape_listbox.shapes_str_var.set(self.display_file._shapes)
+        self.window.reset()
 
     @redraw_viewport
     def rotate_window(self, e):
