@@ -142,7 +142,7 @@ class App:
 
         vup = [
             self.window.points[3].x - self.window.points[0].x,
-            self.window.points[3].x - self.window.points[0].y,
+            self.window.points[3].y - self.window.points[0].y,
             1,
         ]
 
