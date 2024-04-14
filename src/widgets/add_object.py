@@ -47,7 +47,7 @@ class AddObject:
             ),
         )
 
-    def add_wireframe(self, points, name, color):
+    def add_wireframe(self, points, name, color, fill_polygon):
         self.root.event_generate(
             Events.ADD_SHAPE,
             data=json.dumps(
@@ -56,6 +56,7 @@ class AddObject:
                     "points": list(points),
                     "name": name,
                     "color": color,
+                    "fill": fill_polygon,
                 }
             ),
         )
@@ -133,7 +134,9 @@ class AddObject:
                 self.add_line(x1, y1, x2, y2, name, color)
             elif type_obj == "Wireframe":
                 points = str(shape_frame.winfo_children()[1].get())
-                self.add_wireframe(eval(f"[{points}]"), name, color)
+                self.add_wireframe(
+                    eval(f"[{points}]"), name, color, self.fill_polygon.get()
+                )
         except:
             error_message = (
                 "X's and Y's must be a number."
@@ -179,3 +182,12 @@ class AddObject:
             ).grid(row=0, column=0, padx=5, pady=5)
             entry_points = ttk.Entry(shape_frame)
             entry_points.grid(row=1, column=0, padx=5, pady=5)
+
+            self.fill_polygon = StringVar()
+            ttk.Checkbutton(
+                shape_frame,
+                text="Fill Wireframe",
+                onvalue="True",
+                offvalue="False",
+                variable=self.fill_polygon,
+            ).grid(row=2, column=0)

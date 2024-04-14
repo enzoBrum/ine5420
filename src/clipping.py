@@ -1,4 +1,5 @@
-from shape import Point, Line
+from numpy import poly
+from shape import Point, Line, Wireframe
 from vector3 import Vector3
 
 
@@ -18,8 +19,8 @@ def liang_barsky(
 ) -> list[Line]:
     return_lines = []
     for line in lines:
-        p_a = line.ppc_points[0]
-        p_b = line.ppc_points[1]
+        p_a = line.ppc_points[1]
+        p_b = line.ppc_points[0]
 
         p1 = -(p_a.x - p_b.x)
         p2 = p_a.x - p_b.x
@@ -31,12 +32,16 @@ def liang_barsky(
         q2 = window_max.x - p_b.x
         q3 = p_b.y - window_min.y
         q4 = window_max.y - p_b.y
+        qk = [q1, q2, q3, q4]
 
         r1 = q1 / p1
         r2 = q2 / p2
         r3 = q3 / p3
         r4 = q4 / p4
         rk = [r1, r2, r3, r4]
+
+        if any(p == 0 and q < 0 for p, q in zip(pk, qk)):
+            continue
 
         pk_up = [i for i in range(len(pk)) if pk[i] > 0]
         pk_down = [i for i in range(len(pk)) if pk[i] < 0]
@@ -50,11 +55,12 @@ def liang_barsky(
         x1 = p_b.x + c1 * p2
         y1 = p_b.y + c1 * p4
         x2 = p_b.x + c2 * p2
-        y2 = p_b.x + c2 * p4
+        y2 = p_b.y + c2 * p4
 
-        return_lines.append(
-            Line([Vector3(x1, y1, 1), Vector3(x2, y2, 1)], line.name, line.color)
-        )
+        line.ppc_points[0] = Vector3(x1, y1, 0)
+        line.ppc_points[1] = Vector3(x2, y2, 0)
+
+        return_lines.append(line)
 
     return return_lines
 
@@ -99,8 +105,8 @@ def cohen_sutherland(
         rc1 = __cohen_sutherland_get_rc(x1, y1, xw_min, xw_max, yw_min, yw_max)
         rc2 = __cohen_sutherland_get_rc(x2, y2, xw_min, xw_max, yw_min, yw_max)
 
-        print(f"RC1: {bin(rc1)}, RC2: {bin(rc2)}")
-        print(f"XW_MIN: {xw_min}, X1: {x1}, X2: {x2}")
+        # print(f"RC1: {bin(rc1)}, RC2: {bin(rc2)}")
+        # print(f"XW_MIN: {xw_min}, X1: {x1}, X2: {x2}")
 
         # dentro
         if rc1 == rc2 == 0:
@@ -225,8 +231,6 @@ def cohen_sutherland(
 
             line.ppc_points[1].x = xw_max
             line.ppc_points[1].y = y2
-
-            print("AAAAAAAAAAAAAAAAAAAAAA")
         # p2 no canto inferior esquerdo
         elif rc2 == 0b0110:
             old_y2 = y2
@@ -240,6 +244,82 @@ def cohen_sutherland(
             line.ppc_points[1].x = x2 if x_inside else xw_max
             line.ppc_points[1].y = y2 if y_inside else yw_min
 
-        print(f"X1: {x1}, X2: {x2}, Y1: {y1}, Y2: {y2}, XW_MAX: {xw_max}")
+        # print(f"X1: {x1}, X2: {x2}, Y1: {y1}, Y2: {y2}, XW_MAX: {xw_max}")
         returned_lines.append(line)
     return returned_lines
+
+
+def sutherland_hodgman(
+    polygons: list[Wireframe], window_max: Vector3, window_min: Vector3
+) -> list[Wireframe]:
+    retuned_polygons = []
+
+    for polygon in polygons:
+        points_list = []
+
+        for i in range(len(polygon.ppc_points)):
+            p = polygon.ppc_points[i]
+            q = polygon.ppc_points[(i + 1) % len(polygon.ppc_points)]
+            print(f"P: {p}, Q: {q}")
+
+            p_inside = (window_min.x <= p.x <= window_max.x) and (
+                window_min.y <= p.y <= window_max.y
+            )
+            q_inside = (window_min.x <= q.x <= window_max.x) and (
+                window_min.y <= q.y <= window_max.y
+            )
+
+            if p_inside and q_inside:
+                print("P e Q dentro")
+                points_list.append(q)
+            elif p_inside and not q_inside:
+                print("P dentro e Q fora")
+                intersect = liang_barsky(
+                    [Line([p, q], "", "")], window_max, window_min
+                )[0].ppc_points
+                points_list.append(intersect[1])
+            elif not p_inside and q_inside:
+                print("P fora e Q dentro")
+                intersect = liang_barsky(
+                    [Line([p, q], "", "")], window_max, window_min
+                )[0].ppc_points
+                if intersect[0] == q:
+                    points_list.append(intersect[1])
+                else:
+                    points_list.append(intersect[0])
+                points_list.append(q)
+            elif not p_inside and not q_inside:
+                print("P e Q fora")
+                intersect = liang_barsky([Line([p, q], "", "")], window_max, window_min)
+                if len(intersect) > 0:
+                    points_list.append(intersect[0].ppc_points[0])
+                    points_list.append(intersect[0].ppc_points[1])
+                else:
+                    # q não foi inserido, logo não há seguimento entre q e o póximo ponto.
+                    # polygon.ppc_inexistent_lines.add(
+                    #     (i % len(polygon.ppc_points), (i + 1) % len(polygon.ppc_points))
+                    # )
+                    if (p.x < window_min.x and q.y < window_min.y) or (
+                        q.x < window_min.x and p.y < window_min.y
+                    ):
+                        points_list.append(Vector3(window_min.x, window_min.y, 0))
+                    elif (p.x < window_min.x and q.y > window_max.y) or (
+                        q.x < window_min.x and p.y > window_max.y
+                    ):
+                        points_list.append(Vector3(window_min.x, window_max.y, 0))
+                    elif (p.x > window_max.x and q.y > window_max.y) or (
+                        q.x > window_max.x and p.y > window_max.y
+                    ):
+                        points_list.append(Vector3(window_max.x, window_max.y, 0))
+                    elif (p.x > window_max.x and q.y < window_min.y) or (
+                        q.x > window_max.x and p.y < window_min.y
+                    ):
+                        points_list.append(Vector3(window_max.x, window_min.y, 0))
+
+            print(f"OUTPUT: {points_list}")
+
+        retuned_polygons.append(
+            Wireframe(points_list, polygon.fill, polygon.name, polygon.color)
+        )
+
+    return retuned_polygons

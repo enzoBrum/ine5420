@@ -29,7 +29,9 @@ class WindowControls:
 
         ttk.Label(self.frame, text="Window").grid(column=0, row=0, sticky="nw")
 
-        ttk.Label(self.frame, text="Step/Rotation angle:").grid(column=0, row=1, sticky="w")
+        ttk.Label(self.frame, text="Step/Rotation angle:").grid(
+            column=0, row=1, sticky="w"
+        )
 
         ttk.Entry(self.frame, textvariable=self.window_step).grid(
             column=1, row=1, sticky="w"
@@ -170,3 +172,37 @@ class WindowControls:
                 ),
             ),
         ).grid(row=5, column=0)
+
+        clipping_frame = ttk.Frame(
+            self.frame,
+            padding="10 -3 10 10",
+            border=3,
+            borderwidth=3,
+            relief="groove",
+        )
+        clipping_frame.grid(column=0, row=12, pady=12)
+
+        ttk.Label(clipping_frame, text="Clipping algorithm:").grid(column=0, row=0)
+
+        cohen = "cohen-sutherland"
+        liang = "liang-barsky"
+
+        self.clipping_algorithm = StringVar(value=cohen)
+        ttk.Radiobutton(
+            clipping_frame,
+            text=cohen,
+            value=cohen,
+            variable=self.clipping_algorithm,
+            command=lambda: self.frame.event_generate(
+                Events.CHANGE_CLIPPING_ALGORITHM, data="cohen"
+            ),
+        ).grid(column=0, row=1, sticky="W")
+        ttk.Radiobutton(
+            clipping_frame,
+            text=liang,
+            value=liang,
+            variable=self.clipping_algorithm,
+            command=lambda: self.frame.event_generate(
+                Events.CHANGE_CLIPPING_ALGORITHM, data="liang"
+            ),
+        ).grid(column=0, row=2, sticky="W")

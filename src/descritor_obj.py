@@ -1,3 +1,4 @@
+from copy import deepcopy
 from itertools import chain
 from math import e
 import os
@@ -123,7 +124,7 @@ class DescritorOBJ:
                 indices = [int(x) for x in line.split()[1:]]
             i += 1
 
-        points = [vertices[idx - 1] for idx in indices]
+        points = [deepcopy(vertices[idx - 1]) for idx in indices]
         match len(points):
             case 1:
                 return i, Point(points, name, color)

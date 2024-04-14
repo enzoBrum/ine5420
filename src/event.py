@@ -10,3 +10,4 @@ class Events:
     ADD_SHAPE = "<<AddShape>>"
     SAVE_SHAPES = "<<SaveShapes>>"
     LOAD_SHAPES = "<<LoadShapes>>"
+    CHANGE_CLIPPING_ALGORITHM = "<<ChangeClipping>>"

@@ -11,9 +11,11 @@ from display_file import DisplayFile
 from event import Events
 from interface import Viewport, Window
 from shape import Line, Point, Shape, Wireframe
+from clipping import cohen_sutherland, liang_barsky
 from transformations import center, rotate, scale, translation
 from vector3 import Vector3
 from widgets import ShapeListbox, WindowControls
+import sv_ttk
 
 VIEWPORT_DIMENSION = (600, 600)
 GEOMETRY = "1000x1000"
@@ -79,13 +81,20 @@ class App:
 
             color = data["color"]
             shape = None
+            print("AABCD")
+            print(data["fill"].lower() == "true")
             match data["type"]:
                 case "point":
                     shape = Point(points, name, color)
                 case "line":
                     shape = Line(points, name, color)
                 case "wireframe":
-                    shape = Wireframe(points, name, color)
+                    shape = Wireframe(
+                        points,
+                        data["fill"].lower() == "true",
+                        name,
+                        color,
+                    )
 
             print(f"Added shape: {shape}")
             self.display_file.append(shape)
@@ -203,6 +212,14 @@ class App:
 
         print(f"Selected shape: {self.selected_shape}")
 
+    @redraw_viewport
+    def change_line_clipping(self, alg: str):
+        print(f"Mudando algoritmo de clipping para {alg}")
+        if alg == "cohen":
+            self.viewport.line_clipping_function = cohen_sutherland
+        else:
+            self.viewport.line_clipping_function = liang_barsky
+
     def __create_viewport_and_log(self):
         viewport_frame = ttk.Frame(self.frame, padding="12 -3 12 12")
         viewport_frame.grid(column=1, row=0)
@@ -250,6 +267,9 @@ class App:
         self.bind_event(self.add_shape, Events.ADD_SHAPE, True)
         self.bind_event(self.save_shapes, Events.SAVE_SHAPES, True)
         self.bind_event(self.load_shapes, Events.LOAD_SHAPES, True)
+        self.bind_event(
+            self.change_line_clipping, Events.CHANGE_CLIPPING_ALGORITHM, True
+        )
 
     def __init__(self):
         self.root = Tk()
@@ -281,16 +301,28 @@ class App:
         #        }
         #    )
         # )
-        # self.add_shape(
-        #    json.dumps(
-        #        {
-        #            "type": "line",
-        #            "points": [(300, 400), (500, 500)],
-        #            "name": "Bar",
-        #            "color": self.shape_listbox.add_object.color_hex_name["red"],
-        #        }
-        #    )
-        # )
+        self.add_shape(
+            json.dumps(
+                {
+                    "type": "wireframe",
+                    "points": [(0, 500), (100, 600), (150, 500)],
+                    "name": "Bar-1",
+                    "color": self.shape_listbox.add_object.color_hex_name["red"],
+                    "fill": "false",
+                }
+            )
+        )
+        self.add_shape(
+            json.dumps(
+                {
+                    "type": "wireframe",
+                    "points": [(0, 0), (100, 100), (150, 0)],
+                    "name": "Bar",
+                    "color": self.shape_listbox.add_object.color_hex_name["red"],
+                    "fill": "True",
+                }
+            )
+        )
 
     def run(self):
         self.root.mainloop()
