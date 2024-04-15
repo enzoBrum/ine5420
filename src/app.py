@@ -5,27 +5,21 @@ import traceback
 from typing import Callable
 
 import numpy as np
+import sv_ttk
 
+from clipping import cohen_sutherland, liang_barsky
 from descritor_obj import DescritorOBJ
 from display_file import DisplayFile
 from event import Events
 from interface import Viewport, Window
 from shape import Line, Point, Shape, Wireframe
-from clipping import cohen_sutherland, liang_barsky
 from transformations import center, rotate, scale, translation
 from vector3 import Vector3
 from widgets import ShapeListbox, WindowControls
-import sv_ttk
 
 VIEWPORT_DIMENSION = (600, 600)
 GEOMETRY = "1000x1000"
 PROGRAM_NAME = "sistema básico de CG 2D"
-
-"""
-TODO: suportar índices absolutos no object file
-TODO: preencher polígono com cor (canvas.create_polygon?)
-TODO: clipping de polígono
-"""
 
 
 class App:
@@ -81,15 +75,13 @@ class App:
 
             color = data["color"]
             shape = None
-            print("AABCD")
-            print(data["fill"].lower() == "true")
             match data["type"]:
                 case "point":
-                    shape = Point(points, name, color)
+                    shape = Point(points[0], name, color)
                 case "line":
-                    shape = Line(points, name, color)
+                    shape = Line.from_vector3(*points, name, color)
                 case "wireframe":
-                    shape = Wireframe(
+                    shape = Wireframe.from_vector3(
                         points,
                         data["fill"].lower() == "true",
                         name,

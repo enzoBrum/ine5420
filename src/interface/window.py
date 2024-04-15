@@ -1,7 +1,5 @@
-from copy import deepcopy
+from copy import copy, deepcopy
 from math import atan2, degrees
-from tkinter import StringVar
-import traceback
 
 import numpy as np
 
@@ -42,9 +40,12 @@ class Window:
     def ppc_transformation(self, shapes: list[Shape]):
         wcx, wcy = center(self.points)
 
+        shape_sizes = []
         points = deepcopy(self.points)
         for shape in shapes:
-            points += deepcopy(shape.points)
+            shape_points = deepcopy(shape.points)
+            shape_sizes.append(len(shape_points))
+            points += shape_points
 
         translation(-wcx, -wcy, points)
 
@@ -52,18 +53,16 @@ class Window:
         y = self.points[3].y - self.points[0].y
         degree = degrees(atan2(y, x)) - 90
 
-        print(degree)
         rotate(degree, Vector3(wcx, wcy), points)
 
-        i = 0
+        begin = 0
         for j in range(len(self.ppc_points)):
-            self.ppc_points[j] = points[i]
-            i += 1
+            self.ppc_points[j] = points[begin]
+            begin += 1
 
-        for shape in shapes:
-            for j in range(len(shape.ppc_points)):
-                shape.ppc_points[j] = points[i]
-                i += 1
+        for i, shape in enumerate(shapes):
+            shape.ppc_points = points[begin : begin + shape_sizes[i]]
+            begin += shape_sizes[i]
 
     @property
     def v_up(self) -> tuple[Vector3, Vector3]:

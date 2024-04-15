@@ -1,4 +1,5 @@
 from copy import deepcopy
+from functools import partial
 from tkinter import Canvas, Misc
 from typing import Callable
 
@@ -15,7 +16,7 @@ class Viewport:
     _canvas: Canvas
     _min: Vector3
     _max: Vector3
-    line_clipping_function: Callable[[list[Line]], list[Line]]
+    line_clipping_function: Callable[[Vector3, Vector3, Line], tuple[Vector3, Vector3]]
 
     def __init__(
         self,
@@ -62,15 +63,6 @@ class Viewport:
 
         return converted_points
 
-    def _inside_window(
-        self, points: list[Vector3], window_min: Vector3, window_max: Vector3
-    ) -> bool:
-        for point in points:
-            inside = window_min.x <= point.x <= window_max.x and window_min.y <= point.y
-            if not inside:
-                return False
-        return True
-
     def draw(self, window: Window, display_file: list[Shape]):
         self.canvas.delete("all")
         self.canvas.create_rectangle(
@@ -80,28 +72,17 @@ class Viewport:
             self._max.y - self._min.y - 10,
             outline="red",
         )
+
         window.ppc_transformation(display_file)
 
         window_max = window.max_ppc
         window_min = window.min_ppc
 
-        points = []
-        lines = []
-        wireframes = []
+        viewport_transform = partial(self._viewport_transform, window_min, window_max)
+        point_clip = partial(point_clipping, window_max, window_min)
+        line_clip = partial(self.line_clipping_function, window_max, window_min)
+
         for shape in display_file:
-            if isinstance(shape, Point):
-                points.append(shape)
-            elif isinstance(shape, Line):
-                lines.append(shape)
-            else:
-                wireframes.append(shape)
-
-        points = point_clipping(points, window_max, window_min)
-        lines = self.line_clipping_function(lines, window_max, window_min)
-        wireframes = sutherland_hodgman(wireframes, window_max, window_min)
-
-        # TODO: OOP
-        for shape in points + lines + wireframes:
             points = shape.ppc_points
             points = self._viewport_transform(window_min, window_max, points)
             if isinstance(shape, Point):
