@@ -131,7 +131,7 @@ class DescritorOBJ:
             case 2:
                 return i, Line(points, name, color)
             case _:
-                return i, Wireframe(points, name, color)
+                return i, Wireframe(points, False, name, color)
 
     @classmethod
     def load(cls, obj_path: str) -> tuple[DisplayFile, dict[str, str]]:

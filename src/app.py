@@ -5,17 +5,17 @@ import traceback
 from typing import Callable
 
 import numpy as np
+import sv_ttk
 
+from clipping import cohen_sutherland, liang_barsky
 from descritor_obj import DescritorOBJ
 from display_file import DisplayFile
 from event import Events
 from interface import Viewport, Window
 from shape import Line, Point, Shape, Wireframe
-from clipping import cohen_sutherland, liang_barsky
 from transformations import center, rotate, scale, translation
 from vector3 import Vector3
 from widgets import ShapeListbox, WindowControls
-import sv_ttk
 
 VIEWPORT_DIMENSION = (600, 600)
 GEOMETRY = "1000x1000"
@@ -301,28 +301,28 @@ class App:
         #        }
         #    )
         # )
-        self.add_shape(
-            json.dumps(
-                {
-                    "type": "wireframe",
-                    "points": [(0, 500), (100, 600), (150, 500)],
-                    "name": "Bar-1",
-                    "color": self.shape_listbox.add_object.color_hex_name["red"],
-                    "fill": "false",
-                }
-            )
-        )
-        self.add_shape(
-            json.dumps(
-                {
-                    "type": "wireframe",
-                    "points": [(0, 0), (100, 100), (150, 0)],
-                    "name": "Bar",
-                    "color": self.shape_listbox.add_object.color_hex_name["red"],
-                    "fill": "True",
-                }
-            )
-        )
+        # self.add_shape(
+        #     json.dumps(
+        #         {
+        #             "type": "wireframe",
+        #             "points": [(0, 500), (100, 600), (150, 500)],
+        #             "name": "Bar-1",
+        #             "color": self.shape_listbox.add_object.color_hex_name["red"],
+        #             "fill": "false",
+        #         }
+        #     )
+        # )
+        # self.add_shape(
+        #     json.dumps(
+        #         {
+        #             "type": "wireframe",
+        #             "points": [(0, 0), (100, 100), (150, 0)],
+        #             "name": "Bar",
+        #             "color": self.shape_listbox.add_object.color_hex_name["red"],
+        #             "fill": "True",
+        #         }
+        #     )
+        # )
 
     def run(self):
         self.root.mainloop()
