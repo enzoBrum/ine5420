@@ -6,9 +6,6 @@ from uuid import uuid4
 from vector3 import Vector3
 
 
-T = TypeVar("T", bound="Shape")
-
-
 class Shape(ABC):
     color: str
     name: str
@@ -40,5 +37,6 @@ class Shape(ABC):
         self,
         canvas: Canvas,
         viewport_transform: Callable[[list[Vector3]], list[Vector3]],
-        clipping_func: Callable[[T], T],
+        window_min: Vector3,
+        window_max: Vector3,
     ): ...

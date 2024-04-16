@@ -1,4 +1,4 @@
-from math import sin, cos, radians
+from math import cos, radians, sin
 
 import numpy as np
 import numpy.typing as npt
@@ -21,7 +21,10 @@ def rotate(degree: float, point: Vector3, points: list[Vector3]) -> None:
         point = [points[i].x, points[i].y, points[i].z]
         point = [round(x, 6) for x in point]
         point = np.array(point)
-        points[i] = Vector3.from_array(np.matmul(point, matrix))
+        vec = Vector3.from_array(np.matmul(point, matrix))
+        points[i].x = vec.x
+        points[i].y = vec.y
+        points[i].z = vec.z
 
 
 def translation(dx: float, dy: float, points: list[Vector3]) -> None:
@@ -43,7 +46,10 @@ def scale(factor: float, points: list[Vector3]) -> None:
 
     for i in range(len(points)):
         point = np.array([points[i].x, points[i].y, points[i].z])
-        points[i] = Vector3.from_array(np.matmul(point, matrix))
+        vec = Vector3.from_array(np.matmul(point, matrix))
+        points[i].x = vec.x
+        points[i].y = vec.y
+        points[i].z = vec.z
 
 
 def create_translation_matrix(

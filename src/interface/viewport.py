@@ -3,7 +3,6 @@ from functools import partial
 from tkinter import Canvas, Misc
 from typing import Callable
 
-from clipping import cohen_sutherland, liang_barsky, point_clipping, sutherland_hodgman
 from interface.window import Window
 from shape import Shape
 from shape.line import Line
@@ -16,7 +15,6 @@ class Viewport:
     _canvas: Canvas
     _min: Vector3
     _max: Vector3
-    line_clipping_function: Callable[[Vector3, Vector3, Line], tuple[Vector3, Vector3]]
 
     def __init__(
         self,
@@ -24,7 +22,6 @@ class Viewport:
         max_vec: Vector3,
         parent: Misc,
         background_color: str = "gray75",
-        line_clipping: Callable[[list[Line]], list[Line]] = cohen_sutherland,
     ):
         self._min = min_vec
         self._max = max_vec
@@ -38,8 +35,6 @@ class Viewport:
             highlightthickness=3,
             highlightbackground="gray",
         )
-
-        self.line_clipping_function = line_clipping
 
     @property
     def canvas(self) -> Canvas:
@@ -79,69 +74,5 @@ class Viewport:
         window_min = window.min_ppc
 
         viewport_transform = partial(self._viewport_transform, window_min, window_max)
-        point_clip = partial(point_clipping, window_max, window_min)
-        line_clip = partial(self.line_clipping_function, window_max, window_min)
-
         for shape in display_file:
-            points = shape.ppc_points
-            points = self._viewport_transform(window_min, window_max, points)
-            if isinstance(shape, Point):
-                point = points[0]
-                self.canvas.create_oval(
-                    point.x - 3, point.y - 3, point.x + 3, point.y + 3, fill=shape.color
-                )
-            elif isinstance(shape, Line):
-                self.canvas.create_line(
-                    points[0].x,
-                    points[0].y,
-                    points[1].x,
-                    points[1].y,
-                    fill=shape.color,
-                    width=3,
-                )
-            elif shape.fill:
-                self.canvas.create_polygon(
-                    *[(p.x, p.y) for p in points],
-                    fill=shape.color,
-                )
-            else:
-                for i in range(len(points)):
-                    p1_in_window_border = False
-                    p2_in_window_border = False
-                    same_border = False
-
-                    p1x, p1y = shape.ppc_points[i].x, shape.ppc_points[i].y
-                    p2x, p2y = (
-                        shape.ppc_points[(i + 1) % len(points)].x,
-                        shape.ppc_points[(i + 1) % len(points)].y,
-                    )
-
-                    for limit in (window_max, window_min):
-                        wx, wy = limit.x, limit.y
-
-                        p1_in_window_border = (
-                            abs(p1x - wx) < 1e-6 or abs(p1y - wy) < 1e-6
-                        ) or p1_in_window_border
-
-                        p2_in_window_border = (
-                            abs(p2x - wx) < 1e-6 or abs(p2y - wy) < 1e-6
-                        ) or p2_in_window_border
-
-                        if (abs(p1x - wx) < 1e-6 and abs(p2x - wx) < 1e-6) or (
-                            abs(p1y - wy) < 1e-6 and abs(p2y - wy) < 1e-6
-                        ):
-                            same_border = True
-
-                    if (
-                        p1_in_window_border and p2_in_window_border and same_border
-                    ):  # TODO: Usar OOP
-                        continue
-
-                    self.canvas.create_line(
-                        points[i].x,
-                        points[i].y,
-                        points[(i + 1) % len(points)].x,
-                        points[(i + 1) % len(points)].y,
-                        fill=shape.color,
-                        width=3,
-                    )
+            shape.draw(self.canvas, viewport_transform, window_min, window_max)

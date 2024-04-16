@@ -29,13 +29,20 @@ class Point(Shape):
             f"p {vertices[self.__point]}"
         )
 
+    def point_clipping(self, window_max: Vector3, window_min: Vector3) -> bool:
+        return (
+            window_min.x <= self.ppc_points[0].x <= window_max.x
+            and window_min.y <= self.ppc_points[0].y <= window_max.y
+        )
+
     def draw(
         self,
         canvas: Canvas,
         viewport_transform: Callable[[list[Vector3]], list[Vector3]],
-        clipping_func: Callable[["Point"], None],
+        window_min: Vector3,
+        window_max: Vector3,
     ):
-        if clipping_func(self.__ppc_point):
+        if self.point_clipping(window_max, window_min, self.__ppc_point):
             x, y = viewport_transform([self.__ppc_point])
             canvas.create_oval(
                 x - self.radius,

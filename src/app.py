@@ -7,7 +7,6 @@ from typing import Callable
 import numpy as np
 import sv_ttk
 
-from clipping import cohen_sutherland, liang_barsky
 from descritor_obj import DescritorOBJ
 from display_file import DisplayFile
 from event import Events
@@ -161,8 +160,11 @@ class App:
         else:
             displacement_vector = -vup_normalized * step
 
+
+        displacement_vector = Vector3.from_array(displacement_vector)
+        points = self.selected_shape.points
         for i in range(len(self.selected_shape.points)):
-            self.selected_shape.points[i] += Vector3.from_array(displacement_vector)
+            points[i] += displacement_vector
 
         if using_object_center:
             new_cx, new_cy = center(self.selected_shape.points)
@@ -207,10 +209,7 @@ class App:
     @redraw_viewport
     def change_line_clipping(self, alg: str):
         print(f"Mudando algoritmo de clipping para {alg}")
-        if alg == "cohen":
-            self.viewport.line_clipping_function = cohen_sutherland
-        else:
-            self.viewport.line_clipping_function = liang_barsky
+        Line.clipping_function = alg
 
     def __create_viewport_and_log(self):
         viewport_frame = ttk.Frame(self.frame, padding="12 -3 12 12")
