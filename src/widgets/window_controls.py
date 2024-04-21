@@ -180,7 +180,7 @@ class WindowControls:
             borderwidth=3,
             relief="groove",
         )
-        clipping_frame.grid(column=0, row=12, pady=12)
+        clipping_frame.grid(column=6, row=9, pady=12)
 
         ttk.Label(clipping_frame, text="Clipping algorithm:").grid(column=0, row=0)
 

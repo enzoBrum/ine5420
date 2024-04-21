@@ -12,7 +12,7 @@ from descritor_obj import DescritorOBJ
 from display_file import DisplayFile
 from event import Events
 from interface import Viewport, Window
-from shape import Line, Point, Shape, Wireframe
+from shape import Line, Point, Shape, Wireframe, Curve2D
 from transformations import center, rotate, scale, translation
 from vector3 import Vector3
 from widgets import ShapeListbox, WindowControls
@@ -81,8 +81,6 @@ class App:
 
             color = data["color"]
             shape = None
-            print("AABCD")
-            print(data["fill"].lower() == "true")
             match data["type"]:
                 case "point":
                     shape = Point(points, name, color)
@@ -94,6 +92,13 @@ class App:
                         data["fill"].lower() == "true",
                         name,
                         color,
+                    )
+                case "curve2d":
+                    shape = Curve2D(
+                        points,
+                        name,
+                        color,
+                        int(data["points_per_segment"]),
                     )
 
             print(f"Added shape: {shape}")
@@ -312,17 +317,66 @@ class App:
         #         }
         #     )
         # )
-        # self.add_shape(
-        #     json.dumps(
-        #         {
-        #             "type": "wireframe",
-        #             "points": [(0, 0), (100, 100), (150, 0)],
-        #             "name": "Bar",
-        #             "color": self.shape_listbox.add_object.color_hex_name["red"],
-        #             "fill": "True",
-        #         }
-        #     )
-        # )
+
+        self.add_shape(
+            json.dumps(
+                {
+                    "type": "curve2d",
+                    "points": [
+                        (50, 10),
+                        (50, 120),
+                        (300, 120),
+                        (300, 10),
+                        (300, -120),
+                        (430, 70),
+                        (470, 10),
+                    ],
+                    "name": "Baz",
+                    "color": self.shape_listbox.add_object.color_hex_name["red"],
+                    "points_per_segment": 100,
+                }
+            )
+        )
+        self.add_shape(
+            json.dumps(
+                {
+                    "type": "point",
+                    "points": [(50, 10)],
+                    "name": "P1",
+                    "color": self.shape_listbox.add_object.color_hex_name["blue"],
+                }
+            )
+        )
+        self.add_shape(
+            json.dumps(
+                {
+                    "type": "point",
+                    "points": [(50, 60)],
+                    "name": "R1",
+                    "color": self.shape_listbox.add_object.color_hex_name["orange"],
+                }
+            )
+        )
+        self.add_shape(
+            json.dumps(
+                {
+                    "type": "point",
+                    "points": [(80, 60)],
+                    "name": "R2",
+                    "color": self.shape_listbox.add_object.color_hex_name["pink"],
+                }
+            )
+        )
+        self.add_shape(
+            json.dumps(
+                {
+                    "type": "point",
+                    "points": [(100, 10)],
+                    "name": "P2",
+                    "color": self.shape_listbox.add_object.color_hex_name["gray"],
+                }
+            )
+        )
 
     def run(self):
         self.root.mainloop()

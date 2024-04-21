@@ -2,12 +2,19 @@ from copy import deepcopy
 from tkinter import Canvas, Misc
 from typing import Callable
 
-from clipping import cohen_sutherland, liang_barsky, point_clipping, sutherland_hodgman
+from clipping import (
+    bezier_clipping,
+    cohen_sutherland,
+    liang_barsky,
+    point_clipping,
+    sutherland_hodgman,
+)
 from interface.window import Window
 from shape import Shape
 from shape.line import Line
 from shape.point import Point
 from shape.wireframe import Wireframe
+from shape.curve import Curve2D
 from vector3 import Vector3
 
 
@@ -80,30 +87,35 @@ class Viewport:
             self._max.y - self._min.y - 10,
             outline="red",
         )
-        window.ppc_transformation(display_file)
 
+        window.ppc_transformation(display_file)
         window_max = window.max_ppc
         window_min = window.min_ppc
 
         points = []
         lines = []
         wireframes = []
+        curves = []
         for shape in display_file:
             if isinstance(shape, Point):
                 points.append(shape)
             elif isinstance(shape, Line):
                 lines.append(shape)
-            else:
+            elif isinstance(shape, Wireframe):
                 wireframes.append(shape)
+            else:
+                curves.append(shape)
 
         points = point_clipping(points, window_max, window_min)
         lines = self.line_clipping_function(lines, window_max, window_min)
         wireframes = sutherland_hodgman(wireframes, window_max, window_min)
+        curves = bezier_clipping(curves, window_min, window_max)
 
         # TODO: OOP
-        for shape in points + lines + wireframes:
+        for shape in points + lines + wireframes + curves:
             points = shape.ppc_points
             points = self._viewport_transform(window_min, window_max, points)
+
             if isinstance(shape, Point):
                 point = points[0]
                 self.canvas.create_oval(
@@ -118,7 +130,7 @@ class Viewport:
                     fill=shape.color,
                     width=3,
                 )
-            elif shape.fill:
+            elif isinstance(shape, Wireframe) and shape.fill:
                 self.canvas.create_polygon(
                     *[(p.x, p.y) for p in points],
                     fill=shape.color,
@@ -128,6 +140,9 @@ class Viewport:
                     p1_in_window_border = False
                     p2_in_window_border = False
                     same_border = False
+
+                    if isinstance(shape, Curve2D) and i == len(points) - 1:
+                        break
 
                     p1x, p1y = shape.ppc_points[i].x, shape.ppc_points[i].y
                     p2x, p2y = (

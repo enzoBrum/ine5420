@@ -1,5 +1,6 @@
 from numpy import poly
 from shape import Point, Line, Wireframe
+from shape.curve import Curve2D
 from vector3 import Vector3
 
 
@@ -303,23 +304,44 @@ def sutherland_hodgman(
                         q.x < window_min.x and p.y < window_min.y
                     ):
                         points_list.append(Vector3(window_min.x, window_min.y, 0))
-                    elif (p.x < window_min.x and q.y > window_max.y) or (
+                    if (p.x < window_min.x and q.y > window_max.y) or (
                         q.x < window_min.x and p.y > window_max.y
                     ):
                         points_list.append(Vector3(window_min.x, window_max.y, 0))
-                    elif (p.x > window_max.x and q.y > window_max.y) or (
+                    if (p.x > window_max.x and q.y > window_max.y) or (
                         q.x > window_max.x and p.y > window_max.y
                     ):
                         points_list.append(Vector3(window_max.x, window_max.y, 0))
-                    elif (p.x > window_max.x and q.y < window_min.y) or (
+                    if (p.x > window_max.x and q.y < window_min.y) or (
                         q.x > window_max.x and p.y < window_min.y
                     ):
                         points_list.append(Vector3(window_max.x, window_min.y, 0))
 
             print(f"OUTPUT: {points_list}")
 
-        retuned_polygons.append(
-            Wireframe(points_list, polygon.fill, polygon.name, polygon.color)
-        )
+        polygon.ppc_points = points_list
+        retuned_polygons.append(polygon)
 
     return retuned_polygons
+
+
+def bezier_clipping(
+    curves: list[Curve2D], window_min: Vector3, window_max: Vector3
+) -> list[Curve2D]:
+    returned_curves = []
+    for curve in curves:
+        points = []
+        for i in range(len(curve.ppc_points) - 1):
+            p1, p2 = curve.ppc_points[i], curve.ppc_points[i + 1]
+
+            line = liang_barsky([Line([p1, p2])], window_max, window_min)
+            if len(line):
+                points.append(line[0].ppc_points[0])
+
+        line = liang_barsky([Line([points[-2], points[-1]])], window_max, window_min)
+        if len(line):
+            points.append(line[0].ppc_points[1])
+
+        curve.ppc_points = points
+        returned_curves.append(curve)
+    return returned_curves

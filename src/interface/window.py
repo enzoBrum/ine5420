@@ -1,4 +1,5 @@
 from copy import deepcopy
+from hmac import new
 from math import atan2, degrees
 from tkinter import StringVar
 import traceback
@@ -53,7 +54,8 @@ class Window:
         degree = degrees(atan2(y, x)) - 90
 
         print(degree)
-        rotate(degree, Vector3(wcx, wcy), points)
+        if abs(degree) > 1e-6:
+            rotate(degree, Vector3(wcx, wcy), points)
 
         i = 0
         for j in range(len(self.ppc_points)):
@@ -61,9 +63,11 @@ class Window:
             i += 1
 
         for shape in shapes:
-            for j in range(len(shape.ppc_points)):
-                shape.ppc_points[j] = points[i]
+            new_ppc = []
+            for j in range(len(shape.points)):
+                new_ppc.append(points[i])
                 i += 1
+            shape.ppc_points = new_ppc
 
     @property
     def v_up(self) -> tuple[Vector3, Vector3]:
