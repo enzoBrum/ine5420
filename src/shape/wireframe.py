@@ -5,6 +5,7 @@ from clipping import SutherlandHodgman
 from vector3 import Vector3
 
 from .shape import Shape
+from .utils import ignore_lines_in_window_border
 
 class Wireframe(Shape):
     shape_name: str = "Wireframe"
@@ -31,43 +32,12 @@ class Wireframe(Shape):
         )
 
     def process_clipped_points(self, points: list[Vector3], transformed_points: list[Vector3], window_min: Vector3, window_max: Vector3) -> list[Vector3]:
-        if self.fill:
+        if self.fill or not len(transformed_points):
             return transformed_points
 
-        returned_points = []
-        for i in range(len(points)):
-            p1_in_window_border = False
-            p2_in_window_border = False
-            same_border = False
-
-            p1x, p1y = points[i].x, points[i].y
-            p2x, p2y = points[(i+1) % len(points)].x, points[(i+1) % len(points)].y
-
-            for limit in (window_max, window_min):
-                wx, wy = limit.x, limit.y
-
-                p1_in_window_border = (
-                    abs(p1x - wx) < 1e-6 or abs(p1y - wy) < 1e-6
-                ) or p1_in_window_border
-
-                p2_in_window_border = (
-                    abs(p2x - wx) < 1e-6 or abs(p2y - wy) < 1e-6
-                ) or p2_in_window_border
-
-                if (abs(p1x - wx) < 1e-6 and abs(p2x - wx) < 1e-6) or (
-                    abs(p1y - wy) < 1e-6 and abs(p2y - wy) < 1e-6
-                ):
-                    same_border = True
-
-            if (
-                p1_in_window_border and p2_in_window_border and same_border
-            ): 
-                continue
-
-            returned_points.append(transformed_points[i])
-            returned_points.append(transformed_points[(i+1) % len(transformed_points)])
-
-        return returned_points
+        points.append(points[0])
+        transformed_points.append(transformed_points[0])
+        return ignore_lines_in_window_border(points, transformed_points, window_min, window_max)
 
     def draw(self, canvas: Canvas, points: list[Vector3]):
         if self.fill:

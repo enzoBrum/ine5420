@@ -1,9 +1,5 @@
 from abc import ABC, abstractmethod
 
-from numpy import poly
-
-from shape import Line, Point, Wireframe
-from shape.curve import Curve2D
 from vector3 import Vector3
 
 class Clipper(ABC):
@@ -21,7 +17,6 @@ class PointClipper(Clipper):
 class LiangBarsky(Clipper):
     @classmethod
     def clip(cls, points: list[Vector3], window_max: Vector3, window_min: Vector3) -> list[Vector3]:
-        print("Clipando com Liang")
         p_b, p_a = points
 
         p1 = -(p_a.x - p_b.x)
@@ -309,10 +304,9 @@ class BezierClipper(Clipper):
 
             line = LiangBarsky.clip([p1,p2], window_max, window_min)
             if len(line):
-                points.append(line[0])
+                returned_points.append(line[0])
 
         line = LiangBarsky.clip([points[-2], points[-1]], window_max, window_min)
         if len(line):
-            points.append(points[1])
-
+            returned_points.append(line[1])
         return returned_points

@@ -1,12 +1,20 @@
 from copy import deepcopy
-from vector3 import Vector3
-from shape import Shape
+from itertools import batched
+from tkinter import Canvas
+
 from numpy import arange
+
+from clipping import BezierClipper
+from shape import Shape
+from vector3 import Vector3
+
+from .utils import ignore_lines_in_window_border
 
 
 class Curve2D(Shape):
     shape_name: str = "Curve2D"
     points_per_segment: int
+    clipper = BezierClipper
 
     def __init__(
         self,
@@ -67,3 +75,15 @@ class Curve2D(Shape):
         self.points = new_points
         self.ppc_points = deepcopy(self.points)
         print(self.points)
+
+
+    def serialize(self, vertices: dict[Vector3, int], hex_to_color: dict[str, str]) -> str:
+        raise NotImplementedError
+
+    def process_clipped_points(self, points: list[Vector3], transformed_points: list[Vector3], window_min: Vector3, window_max: Vector3) -> list[Vector3]:
+        return ignore_lines_in_window_border(points, transformed_points, window_min, window_max)
+
+    def draw(self, canvas: Canvas, points: list[Vector3]):
+        points = batched(points, 2)
+        for p1, p2 in points:
+            canvas.create_line(p1.x, p1.y, p2.x, p2.y, width=3, fill=self.color)

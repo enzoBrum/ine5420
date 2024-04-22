@@ -296,27 +296,27 @@ class App:
         self.__create_viewport_and_log()
         self.__bind_events()
 
-        # self.add_shape(
-        #    json.dumps(
-        #        {
-        #            "type": "line",
-        #            "points": [(100, 100), (500, 500)],
-        #            "name": "Foo",
-        #            "color": self.shape_listbox.add_object.color_hex_name["blue"],
-        #        }
-        #    )
-        # )
-        # self.add_shape(
-        #     json.dumps(
-        #         {
-        #             "type": "wireframe",
-        #             "points": [(0, 500), (100, 600), (150, 500)],
-        #             "name": "Bar-1",
-        #             "color": self.shape_listbox.add_object.color_hex_name["red"],
-        #             "fill": "false",
-        #         }
-        #     )
-        # )
+        self.add_shape(
+           json.dumps(
+               {
+                   "type": "line",
+                   "points": [(100, 100), (500, 500)],
+                   "name": "Foo",
+                   "color": self.shape_listbox.add_object.color_hex_name["blue"],
+               }
+           )
+        )
+        self.add_shape(
+            json.dumps(
+                {
+                    "type": "wireframe",
+                    "points": [(0, 500), (100, 600), (150, 500)],
+                    "name": "Bar-1",
+                    "color": self.shape_listbox.add_object.color_hex_name["red"],
+                    "fill": "false",
+                }
+            )
+        )
 
         self.add_shape(
             json.dumps(
@@ -332,52 +332,11 @@ class App:
                         (470, 10),
                     ],
                     "name": "Baz",
-                    "color": self.shape_listbox.add_object.color_hex_name["red"],
-                    "points_per_segment": 100,
+                    "color": self.shape_listbox.add_object.color_hex_name["green"],
+                    "points_per_segment": 1000,
                 }
             )
         )
-        self.add_shape(
-            json.dumps(
-                {
-                    "type": "point",
-                    "points": [(50, 10)],
-                    "name": "P1",
-                    "color": self.shape_listbox.add_object.color_hex_name["blue"],
-                }
-            )
-        )
-        self.add_shape(
-            json.dumps(
-                {
-                    "type": "point",
-                    "points": [(50, 60)],
-                    "name": "R1",
-                    "color": self.shape_listbox.add_object.color_hex_name["orange"],
-                }
-            )
-        )
-        self.add_shape(
-            json.dumps(
-                {
-                    "type": "point",
-                    "points": [(80, 60)],
-                    "name": "R2",
-                    "color": self.shape_listbox.add_object.color_hex_name["pink"],
-                }
-            )
-        )
-        self.add_shape(
-            json.dumps(
-                {
-                    "type": "point",
-                    "points": [(100, 10)],
-                    "name": "P2",
-                    "color": self.shape_listbox.add_object.color_hex_name["gray"],
-                }
-            )
-        )
-
     def run(self):
         self.root.mainloop()
 
