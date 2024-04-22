@@ -1,27 +1,28 @@
+from abc import ABC, abstractmethod
+
 from numpy import poly
-from shape import Point, Line, Wireframe
+
+from shape import Line, Point, Wireframe
 from shape.curve import Curve2D
 from vector3 import Vector3
 
+class Clipper(ABC):
+    @classmethod
+    @abstractmethod
+    def clip(cls, points: list[Vector3], window_max: Vector3, window_min: Vector3) -> list[Vector3]:
+        ...
 
-def point_clipping(
-    points: list[Point], window_max: Vector3, window_min: Vector3
-) -> list[Point]:
-    return [
-        p
-        for p in points
-        if window_min.x <= p.ppc_points[0].x <= window_max.x
-        and window_min.y <= p.ppc_points[0].y <= window_max.y
-    ]
+class PointClipper(Clipper):
+    @classmethod
+    def clip(cls, points: list[Vector3], window_max: Vector3, window_min: Vector3) -> list[Vector3]:
+        x, y = points[0]
+        return points if window_min.x <= x <= window_max.x and window_min.y <= y <= window_max.y else []
 
-
-def liang_barsky(
-    lines: list[Line], window_max: Vector3, window_min: Vector3
-) -> list[Line]:
-    return_lines = []
-    for line in lines:
-        p_a = line.ppc_points[1]
-        p_b = line.ppc_points[0]
+class LiangBarsky(Clipper):
+    @classmethod
+    def clip(cls, points: list[Vector3], window_max: Vector3, window_min: Vector3) -> list[Vector3]:
+        print("Clipando com Liang")
+        p_b, p_a = points
 
         p1 = -(p_a.x - p_b.x)
         p2 = p_a.x - p_b.x
@@ -42,7 +43,7 @@ def liang_barsky(
         rk = [r1, r2, r3, r4]
 
         if any(p == 0 and q < 0 for p, q in zip(pk, qk)):
-            continue
+            return []
 
         pk_up = [i for i in range(len(pk)) if pk[i] > 0]
         pk_down = [i for i in range(len(pk)) if pk[i] < 0]
@@ -51,77 +52,65 @@ def liang_barsky(
         c2 = min([rk[i] for i in pk_up] + [1])
 
         if c1 > c2:
-            continue
+            return []
 
         x1 = p_b.x + c1 * p2
         y1 = p_b.y + c1 * p4
         x2 = p_b.x + c2 * p2
         y2 = p_b.y + c2 * p4
 
-        line.ppc_points[0] = Vector3(x1, y1, 0)
-        line.ppc_points[1] = Vector3(x2, y2, 0)
+        return [Vector3(x1, y1), Vector3(x2, y2)]
 
-        return_lines.append(line)
+class CohenSutherland(Clipper):
+    @classmethod
+    def __get_rc(cls, x: float, y: float, xw_min: float, xw_max: float, yw_min: float, yw_max: float) -> int:
+        rc = 0
+        if x < xw_min:
+            rc |= 1 << 0
+        elif x > xw_max:
+            rc |= 1 << 1
 
-    return return_lines
+        if y < yw_min:
+            rc |= 1 << 2
+        elif y > yw_max:
+            rc |= 1 << 3
 
+        return rc
 
-def __cohen_sutherland_get_rc(
-    x: float, y: float, xw_min: float, xw_max: float, yw_min: float, yw_max: float
-) -> int:
-    rc = 0
-    if x < xw_min:
-        rc |= 1 << 0
-    elif x > xw_max:
-        rc |= 1 << 1
+    @classmethod
+    def clip(cls, points: list[Vector3], window_max: Vector3, window_min: Vector3) -> list[Vector3]:
+        print("Clipando com cohen")
+        xw_min = window_min.x
+        xw_max = window_max.x
 
-    if y < yw_min:
-        rc |= 1 << 2
-    elif y > yw_max:
-        rc |= 1 << 3
+        yw_min = window_min.y
+        yw_max = window_max.y
 
-    return rc
-
-
-def cohen_sutherland(
-    lines: list[Line], window_max: Vector3, window_min: Vector3
-) -> list[Line]:
-    returned_lines = []
-    xw_min = window_min.x
-    xw_max = window_max.x
-
-    yw_min = window_min.y
-    yw_max = window_max.y
-    for line in lines:
-        x1, y1 = line.ppc_points[0].x, line.ppc_points[0].y
-        x2, y2 = line.ppc_points[1].x, line.ppc_points[1].y
+        p1, p2 = points
+        x1, y1 = p1
+        x2, y2 = p2
 
         if x1 > x2:
-            line.ppc_points[0], line.ppc_points[1] = (
-                line.ppc_points[1],
-                line.ppc_points[0],
-            )
             x1, y1, x2, y2 = x2, y2, x1, y1
 
-        rc1 = __cohen_sutherland_get_rc(x1, y1, xw_min, xw_max, yw_min, yw_max)
-        rc2 = __cohen_sutherland_get_rc(x2, y2, xw_min, xw_max, yw_min, yw_max)
+        rc1 = cls.__get_rc(x1, y1, xw_min, xw_max, yw_min, yw_max)
+        rc2 = cls.__get_rc(x2, y2, xw_min, xw_max, yw_min, yw_max)
 
         # print(f"RC1: {bin(rc1)}, RC2: {bin(rc2)}")
         # print(f"XW_MIN: {xw_min}, X1: {x1}, X2: {x2}")
 
         # dentro
         if rc1 == rc2 == 0:
-            returned_lines.append(line)
-            continue
+            return [Vector3(x1, y1), Vector3(x2, y2)]
 
         # totalmente fora
         if (rc1 & rc2) != 0:
-            continue
+            return []
 
         # parcialmente dentro
         if abs(x2 - x1) < 1e-6:
             if not (xw_min <= x1 <= xw_max):
-                continue
+                return []
 
             if y1 <= y2:
                 y1 = max(y1, yw_min)
@@ -129,11 +118,7 @@ def cohen_sutherland(
             else:
                 y2 = max(y2, yw_min)
                 y1 = min(y1, yw_max)
-
-            line.ppc_points[0].y = y1
-            line.ppc_points[1].y = y2
-            returned_lines.append(line)
-            continue
+            return [Vector3(x1, y1), Vector3(x2, y2)]
 
         m = (y2 - y1) / (x2 - x1)
 
@@ -149,19 +134,19 @@ def cohen_sutherland(
             x_inside = xw_min <= x1 <= xw_max
             y_inside = yw_min <= y1 <= yw_max
             if not (x_inside or y_inside):
-                continue
+                return []
 
-            line.ppc_points[0].x = x1 if x_inside else xw_min
-            line.ppc_points[0].y = y1 if y_inside else yw_max
+            if not x_inside:
+                x1 = xw_min
+            if not y_inside:
+                y1 = yw_max
         # p1 na esquerda
         elif rc1 == 0b0001:
             y1 = m * (xw_min - x1) + y1
 
             if not (yw_min <= y1 <= yw_max):
-                continue
-
-            line.ppc_points[0].x = xw_min
-            line.ppc_points[0].y = y1
+                return []
+            x1 = xw_min
         # p1 no canto inferior esquerdo
         elif rc1 == 0b0101:
             old_y1 = y1
@@ -171,46 +156,41 @@ def cohen_sutherland(
             x_inside = xw_min <= x1 <= xw_max
             y_inside = yw_min <= y1 <= yw_max
             if not (x_inside or y_inside):
-                continue
+                return []
 
-            line.ppc_points[0].x = x1 if x_inside else xw_min
-            line.ppc_points[0].y = y1 if y_inside else yw_min
+            if not x_inside:
+                x1 = xw_min
+            if not y_inside:
+                y1 = yw_min
         # p1 no topo
         elif rc1 == 0b1000:
             x1 = x1 + 1 / m * (yw_max - y1)
 
             if not (xw_min <= x1 <= xw_max):
-                continue
+                return []
 
-            line.ppc_points[0].x = x1
-            line.ppc_points[0].y = yw_max
+            y1 = yw_max
         # p1 no fundo
         elif rc1 == 0b0100:
             x1 = x1 + 1 / m * (yw_min - y1)
 
             if not (xw_min <= x1 <= xw_max):
-                continue
-
-            line.ppc_points[0].x = x1
-            line.ppc_points[0].y = yw_min
+                return []
+            y1 = yw_min
         # p2 no topo
         if rc2 == 0b1000:
             x2 = x2 + 1 / m * (yw_max - y2)
 
             if not (xw_min <= x2 <= xw_max):
-                continue
-
-            line.ppc_points[1].x = x2
-            line.ppc_points[1].y = yw_max
+                return []
+            y2 = yw_max
         # p2 no fundo
         elif rc2 == 0b0100:
             x2 = x2 + 1 / m * (yw_min - y2)
 
             if not (xw_min <= x2 <= xw_max):
-                continue
-
-            line.ppc_points[1].x = x2
-            line.ppc_points[1].y = yw_min
+                return []
+            y2 = yw_min
         # p2 no canto superior direito
         elif rc2 == 0b1010:
             old_y2 = y2
@@ -219,19 +199,20 @@ def cohen_sutherland(
             x_inside = xw_min <= x2 <= xw_max
             y_inside = yw_min <= y2 <= yw_max
             if not (x_inside or y_inside):
-                continue
+                return []
 
-            line.ppc_points[1].x = x2 if x_inside else xw_max
-            line.ppc_points[1].y = y2 if y_inside else yw_max
+            if not x_inside:
+                x2 = xw_max
+            if not y_inside:
+                y2 = yw_max
         # p2 na direita
         elif rc2 == 0b0010:
             y2 = m * (xw_max - x2) + y2
 
             if not (yw_min <= y2 <= yw_max):
-                continue
+                return []
 
-            line.ppc_points[1].x = xw_max
-            line.ppc_points[1].y = y2
+            x2 = xw_max
         # p2 no canto inferior esquerdo
         elif rc2 == 0b0110:
             old_y2 = y2
@@ -240,27 +221,23 @@ def cohen_sutherland(
             x_inside = xw_min <= x2 <= xw_max
             y_inside = yw_min <= y2 <= yw_max
             if not (x_inside or y_inside):
-                continue
+                return []
 
-            line.ppc_points[1].x = x2 if x_inside else xw_max
-            line.ppc_points[1].y = y2 if y_inside else yw_min
-
+            if not x_inside:
+                x2 = xw_max
+            if not y_inside:
+                y2 = yw_min
         # print(f"X1: {x1}, X2: {x2}, Y1: {y1}, Y2: {y2}, XW_MAX: {xw_max}")
-        returned_lines.append(line)
-    return returned_lines
+        return [Vector3(x1, y1), Vector3(x2, y2)]
 
-
-def sutherland_hodgman(
-    polygons: list[Wireframe], window_max: Vector3, window_min: Vector3
-) -> list[Wireframe]:
-    retuned_polygons = []
-
-    for polygon in polygons:
+class SutherlandHodgman(Clipper):
+    @classmethod
+    def clip(cls, points: list[Vector3], window_max: Vector3, window_min: Vector3) -> list[Vector3]:
         points_list = []
-
-        for i in range(len(polygon.ppc_points)):
-            p = polygon.ppc_points[i]
-            q = polygon.ppc_points[(i + 1) % len(polygon.ppc_points)]
+        extra_points = 0
+        for i in range(len(points)):
+            p = points[i]
+            q = points[(i + 1) % len(points)]
             print(f"P: {p}, Q: {q}")
 
             p_inside = (window_min.x <= p.x <= window_max.x) and (
@@ -275,15 +252,11 @@ def sutherland_hodgman(
                 points_list.append(q)
             elif p_inside and not q_inside:
                 print("P dentro e Q fora")
-                intersect = liang_barsky(
-                    [Line([p, q], "", "")], window_max, window_min
-                )[0].ppc_points
+                intersect = LiangBarsky.clip([p,q], window_max, window_min)
                 points_list.append(intersect[1])
             elif not p_inside and q_inside:
                 print("P fora e Q dentro")
-                intersect = liang_barsky(
-                    [Line([p, q], "", "")], window_max, window_min
-                )[0].ppc_points
+                intersect = LiangBarsky.clip([p,q], window_max, window_min)
                 if intersect[0] == q:
                     points_list.append(intersect[1])
                 else:
@@ -291,10 +264,10 @@ def sutherland_hodgman(
                 points_list.append(q)
             elif not p_inside and not q_inside:
                 print("P e Q fora")
-                intersect = liang_barsky([Line([p, q], "", "")], window_max, window_min)
+                intersect = LiangBarsky.clip([p,q], window_max, window_min)
                 if len(intersect) > 0:
-                    points_list.append(intersect[0].ppc_points[0])
-                    points_list.append(intersect[0].ppc_points[1])
+                    points_list.append(intersect[0])
+                    points_list.append(intersect[1])
                 else:
                     # q não foi inserido, logo não há seguimento entre q e o póximo ponto.
                     # polygon.ppc_inexistent_lines.add(
@@ -303,45 +276,43 @@ def sutherland_hodgman(
                     if (p.x < window_min.x and q.y < window_min.y) or (
                         q.x < window_min.x and p.y < window_min.y
                     ):
-                        points_list.append(Vector3(window_min.x, window_min.y, 0))
+                        points_list.append(Vector3(window_min.x, window_min.y, 1))
+                        extra_points += 1
                     if (p.x < window_min.x and q.y > window_max.y) or (
                         q.x < window_min.x and p.y > window_max.y
                     ):
-                        points_list.append(Vector3(window_min.x, window_max.y, 0))
+                        points_list.append(Vector3(window_min.x, window_max.y, 1))
+                        extra_points += 1
                     if (p.x > window_max.x and q.y > window_max.y) or (
                         q.x > window_max.x and p.y > window_max.y
                     ):
-                        points_list.append(Vector3(window_max.x, window_max.y, 0))
+                        points_list.append(Vector3(window_max.x, window_max.y, 1))
+                        extra_points += 1
                     if (p.x > window_max.x and q.y < window_min.y) or (
                         q.x > window_max.x and p.y < window_min.y
                     ):
-                        points_list.append(Vector3(window_max.x, window_min.y, 0))
+                        points_list.append(Vector3(window_max.x, window_min.y, 1))
+                        extra_points += 1
 
-            print(f"OUTPUT: {points_list}")
+        if extra_points == len(points_list):
+            points_list = []
+        print(f"OUTPUT: {points_list}")
 
-        polygon.ppc_points = points_list
-        retuned_polygons.append(polygon)
+        return points_list
 
-    return retuned_polygons
+class BezierClipper(Clipper):
+    @classmethod
+    def clip(cls, points: list[Vector3], window_max: Vector3, window_min: Vector3) -> list[Vector3]:
+        returned_points = []
+        for i in range(len(points) - 1):
+            p1, p2 = points[i], points[i + 1]
 
-
-def bezier_clipping(
-    curves: list[Curve2D], window_min: Vector3, window_max: Vector3
-) -> list[Curve2D]:
-    returned_curves = []
-    for curve in curves:
-        points = []
-        for i in range(len(curve.ppc_points) - 1):
-            p1, p2 = curve.ppc_points[i], curve.ppc_points[i + 1]
-
-            line = liang_barsky([Line([p1, p2])], window_max, window_min)
+            line = LiangBarsky.clip([p1,p2], window_max, window_min)
             if len(line):
-                points.append(line[0].ppc_points[0])
+                points.append(line[0])
 
-        line = liang_barsky([Line([points[-2], points[-1]])], window_max, window_min)
+        line = LiangBarsky.clip([points[-2], points[-1]], window_max, window_min)
         if len(line):
-            points.append(line[0].ppc_points[1])
+            points.append(points[1])
 
-        curve.ppc_points = points
-        returned_curves.append(curve)
-    return returned_curves
+        return returned_points

@@ -7,12 +7,12 @@ from typing import Callable
 import numpy as np
 import sv_ttk
 
-from clipping import cohen_sutherland, liang_barsky
+from clipping import CohenSutherland, LiangBarsky
 from descritor_obj import DescritorOBJ
 from display_file import DisplayFile
 from event import Events
 from interface import Viewport, Window
-from shape import Line, Point, Shape, Wireframe, Curve2D
+from shape import Curve2D, Line, Point, Shape, Wireframe
 from transformations import center, rotate, scale, translation
 from vector3 import Vector3
 from widgets import ShapeListbox, WindowControls
@@ -221,9 +221,9 @@ class App:
     def change_line_clipping(self, alg: str):
         print(f"Mudando algoritmo de clipping para {alg}")
         if alg == "cohen":
-            self.viewport.line_clipping_function = cohen_sutherland
+            Line.clipper = CohenSutherland
         else:
-            self.viewport.line_clipping_function = liang_barsky
+            Line.clipper = LiangBarsky
 
     def __create_viewport_and_log(self):
         viewport_frame = ttk.Frame(self.frame, padding="12 -3 12 12")

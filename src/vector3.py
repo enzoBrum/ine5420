@@ -20,6 +20,13 @@ class Vector3:
 
         return Vector3(self.x + other.x, self.y + other.y)
 
+    def __iter__(self):
+        yield self.x
+        yield self.y
+
+        # TODO: Lidar com o z
+        #yield self.z
+
     def __iadd__(self, other: Union["Vector3", int]) -> "Vector3":
         if not isinstance(other, Vector3) and isinstance(other, (int, float)):
             other = Vector3(other, other)
