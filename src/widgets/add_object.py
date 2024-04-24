@@ -75,6 +75,20 @@ class AddObject:
             ),
         )
 
+    def add_bspline(self, points, name, color, points_per_segment):
+        self.root.event_generate(
+            Events.ADD_SHAPE,
+            data=json.dumps(
+                {
+                    "type": "bspline",
+                    "points": list(points),
+                    "name": name,
+                    "color": color,
+                    "points_per_segment": points_per_segment,
+                }
+            ),
+        )
+
     def create_widget(self, root: ttk.Frame):
         self.frame = Toplevel(root)
         self.frame.title("Add Object")
@@ -94,7 +108,7 @@ class AddObject:
 
         ttk.Label(self.frame, text="Shape:").grid(row=2, column=0, padx=10, pady=5)
         type_var = StringVar(self.frame)
-        options = ["Select a shape", "Point", "Line", "Wireframe", "Curve2D"]
+        options = ["Select a shape", "Point", "Line", "Wireframe", "Curve2D", "BSpline"]
         ttk.OptionMenu(
             self.frame,
             type_var,
@@ -159,6 +173,11 @@ class AddObject:
                 points = eval(f"[{points_frame.winfo_children()[2].get()}]")
 
                 self.add_curve2d(points, name, color, num_points)
+            elif type_obj == "BSpline":
+                points = eval(f"[{shape_frame.winfo_children()[1].get()}]")
+                points_per_segment = int(shape_frame.winfo_children()[3].get())
+
+                self.add_bspline(points, name, color, points_per_segment)
         except:
             from traceback import print_exc
 
@@ -247,3 +266,17 @@ class AddObject:
             )
             num_points = ttk.Entry(num_points_frame)
             num_points.grid(row=6, column=7, sticky="ES")
+        elif type_obj == "BSpline":
+            ttk.Label(
+                shape_frame,
+                text="Give the points in exactly format: (x1, y1), (x2, y2), (x3,y3) ...",
+            ).grid(row=0, column=0, padx=5, pady=5)
+            entry_points = ttk.Entry(shape_frame)
+            entry_points.grid(row=1, column=0, padx=5, pady=5)
+
+            ttk.Label(
+                shape_frame,
+                text="Number of points per segment: ",
+            ).grid(row=2, column=0, padx=5, pady=5)
+            entry_points_per_segment = ttk.Entry(shape_frame)
+            entry_points_per_segment.grid(row=3, column=0, padx=5, pady=5)

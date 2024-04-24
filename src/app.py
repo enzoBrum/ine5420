@@ -12,7 +12,7 @@ from descritor_obj import DescritorOBJ
 from display_file import DisplayFile
 from event import Events
 from interface import Viewport, Window
-from shape import Curve2D, Line, Point, Shape, Wireframe
+from shape import Curve2D, Line, Point, Shape, Wireframe, BSpline
 from transformations import center, rotate, scale, translation
 from vector3 import Vector3
 from widgets import ShapeListbox, WindowControls
@@ -95,6 +95,13 @@ class App:
                     )
                 case "curve2d":
                     shape = Curve2D(
+                        points,
+                        name,
+                        color,
+                        int(data["points_per_segment"]),
+                    )
+                case "bspline":
+                    shape = BSpline(
                         points,
                         name,
                         color,
@@ -337,6 +344,27 @@ class App:
                 }
             )
         )
+
+        self.add_shape(
+            json.dumps(
+                {
+                    "type": "bspline",
+                    "points": [
+                        (50, 10),
+                        (50, 120),
+                        (300, 120),
+                        (300, 10),
+                        (300, -120),
+                        (430, 70),
+                        (470, 10),
+                    ],
+                    "name": "Qux",
+                    "color": self.shape_listbox.add_object.color_hex_name["purple"],
+                    "points_per_segment": 10,
+                }
+            )
+        )
+
     def run(self):
         self.root.mainloop()
 
