@@ -1,12 +1,12 @@
 from tkinter import Canvas
-from itertools import batched
-from numpy import matmul, array
+
+from numpy import array, matmul
 from numpy.linalg import inv
 
-from .shape import Shape
-from vector3 import Vector3
 from clipping import BezierClipper
+from vector3 import Vector3
 
+from .shape import Shape
 from .utils import ignore_lines_in_window_border
 
 
@@ -31,13 +31,20 @@ class BSpline(Shape):
         self.__calculate_delta_matrix()
         self.__bsplines()
 
-
-    def serialize(self, vertices: dict[Vector3, int], hex_to_color: dict[str, str]) -> str:
+    def serialize(
+        self, vertices: dict[Vector3, int], hex_to_color: dict[str, str]
+    ) -> str:
         raise NotImplementedError
-    
-    def process_clipped_points(self, points: list[Vector3], transformed_points: list[Vector3], window_min: Vector3, window_max: Vector3) -> list[Vector3]:
+
+    def process_clipped_points(
+        self,
+        points: list[Vector3],
+        transformed_points: list[Vector3],
+        window_min: Vector3,
+        window_max: Vector3,
+    ) -> list[Vector3]:
         return transformed_points
-    
+
     def __bsplines(self) -> None:
         new_points = []
         coeficients = self.__calculate_coefficients()
@@ -56,20 +63,20 @@ class BSpline(Shape):
         delta = 1 / self.points_per_segment
         delta2 = delta * delta
         delta3 = delta2 * delta
-        
-        self.delta_matrix= [
+
+        self.delta_matrix = [
             [0, 0, 0, 1],
             [delta3, delta2, delta, 0],
             [6 * delta3, 2 * delta2, 0, 0],
-            [6 * delta3, 0, 0, 0]
+            [6 * delta3, 0, 0, 0],
         ]
-    
+
     def __calculate_coefficients(self) -> None:
         Mbs = [
-            [-1/6, 3/6, -3/6, 1/6],
-            [3/6, -6/6, 3/6, 0],
-            [-3/6, 0, 3/6, 0],
-            [1/6, 4/6, 1/6, 0]
+            [-1 / 6, 3 / 6, -3 / 6, 1 / 6],
+            [3 / 6, -6 / 6, 3 / 6, 0],
+            [-3 / 6, 0, 3 / 6, 0],
+            [1 / 6, 4 / 6, 1 / 6, 0],
         ]
 
         Mbs_inv = inv(Mbs)
@@ -78,34 +85,35 @@ class BSpline(Shape):
 
         for i in range(3, len(self.points), 1):
             Gbs_x = [
-                self.points[i-3].x, 
-                self.points[i-2].x, 
-                self.points[i-1].x, 
+                self.points[i - 3].x,
+                self.points[i - 2].x,
+                self.points[i - 1].x,
                 self.points[i].x,
             ]
 
             Gbs_y = [
-                self.points[i-3].y, 
-                self.points[i-2].y, 
-                self.points[i-1].y, 
+                self.points[i - 3].y,
+                self.points[i - 2].y,
+                self.points[i - 1].y,
                 self.points[i].y,
             ]
 
             Gbs_z = [
-                self.points[i-3].z, 
-                self.points[i-2].z, 
-                self.points[i-1].z, 
+                self.points[i - 3].z,
+                self.points[i - 2].z,
+                self.points[i - 1].z,
                 self.points[i].z,
             ]
 
-            coeficients['X'].append(matmul(Mbs_inv, Gbs_x))
-            coeficients['Y'].append(matmul(Mbs_inv, Gbs_y))
-            coeficients['Z'].append(matmul(Mbs_inv, Gbs_z))
-        
+            coeficients["X"].append(matmul(Mbs_inv, Gbs_x))
+            coeficients["Y"].append(matmul(Mbs_inv, Gbs_y))
+            coeficients["Z"].append(matmul(Mbs_inv, Gbs_z))
+
         return coeficients
 
-
-    def __calculate_segment_points(self, x_delta: array, y_delta: array, z_delta: array) -> list[Vector3]:
+    def __calculate_segment_points(
+        self, x_delta: array, y_delta: array, z_delta: array
+    ) -> list[Vector3]:
         new_points = []
 
         x, d_x, d2_x, d3_x = x_delta
@@ -114,7 +122,7 @@ class BSpline(Shape):
 
         new_points.append(Vector3(x, y, z))
 
-        for _ in range(self.points_per_segment-1):
+        for _ in range(self.points_per_segment - 1):
             x = x + d_x
             y = y + d_y
             z = z + d_z
@@ -132,7 +140,8 @@ class BSpline(Shape):
         return new_points
 
     def draw(self, canvas: Canvas, points: list[Vector3]) -> None:
-        points = batched(points, 2)
-        for p1, p2 in points:
+        new_points = []
+        for i in range(0, len(points), 2):
+            new_points.append((points[i], points[i + 1]))
+        for p1, p2 in new_points:
             canvas.create_line(p1.x, p1.y, p2.x, p2.y, width=3, fill=self.color)
-

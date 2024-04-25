@@ -1,5 +1,4 @@
 from copy import deepcopy
-from itertools import batched
 from tkinter import Canvas
 
 from numpy import arange
@@ -76,14 +75,25 @@ class Curve2D(Shape):
         self.ppc_points = deepcopy(self.points)
         print(self.points)
 
-
-    def serialize(self, vertices: dict[Vector3, int], hex_to_color: dict[str, str]) -> str:
+    def serialize(
+        self, vertices: dict[Vector3, int], hex_to_color: dict[str, str]
+    ) -> str:
         raise NotImplementedError
 
-    def process_clipped_points(self, points: list[Vector3], transformed_points: list[Vector3], window_min: Vector3, window_max: Vector3) -> list[Vector3]:
-        return ignore_lines_in_window_border(points, transformed_points, window_min, window_max)
+    def process_clipped_points(
+        self,
+        points: list[Vector3],
+        transformed_points: list[Vector3],
+        window_min: Vector3,
+        window_max: Vector3,
+    ) -> list[Vector3]:
+        return ignore_lines_in_window_border(
+            points, transformed_points, window_min, window_max
+        )
 
     def draw(self, canvas: Canvas, points: list[Vector3]):
-        points = batched(points, 2)
-        for p1, p2 in points:
+        new_points = []
+        for i in range(0, len(points), 2):
+            new_points.append((points[i], points[i + 1]))
+        for p1, p2 in new_points:
             canvas.create_line(p1.x, p1.y, p2.x, p2.y, width=3, fill=self.color)
