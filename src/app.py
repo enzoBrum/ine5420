@@ -304,6 +304,17 @@ class App:
         self.__bind_events()
 
         self.add_shape(
+            json.dumps(
+               {
+                   "type": "point",
+                   "points": [(50,10)],
+                   "name": "aaa",
+                   "color": self.shape_listbox.add_object.color_hex_name["blue"],
+               }
+           )
+        )
+
+        self.add_shape(
            json.dumps(
                {
                    "type": "line",
@@ -359,8 +370,8 @@ class App:
                         (470, 10),
                     ],
                     "name": "Qux",
-                    "color": self.shape_listbox.add_object.color_hex_name["purple"],
-                    "points_per_segment": 10,
+                    "color": self.shape_listbox.add_object.color_hex_name["red"],
+                    "points_per_segment": 1000,
                 }
             )
         )

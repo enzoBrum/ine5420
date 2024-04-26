@@ -1,7 +1,6 @@
 from tkinter import Canvas
 
 from numpy import array, matmul
-from numpy.linalg import inv
 
 from clipping import BezierClipper
 from vector3 import Vector3
@@ -43,7 +42,10 @@ class BSpline(Shape):
         window_min: Vector3,
         window_max: Vector3,
     ) -> list[Vector3]:
-        return transformed_points
+        return ignore_lines_in_window_border(
+            points, transformed_points, window_min, window_max
+        )
+    
 
     def __bsplines(self) -> None:
         new_points = []
@@ -79,8 +81,6 @@ class BSpline(Shape):
             [1 / 6, 4 / 6, 1 / 6, 0],
         ]
 
-        Mbs_inv = inv(Mbs)
-
         coeficients = {"X": [], "Y": [], "Z": []}
 
         for i in range(3, len(self.points), 1):
@@ -105,9 +105,9 @@ class BSpline(Shape):
                 self.points[i].z,
             ]
 
-            coeficients["X"].append(matmul(Mbs_inv, Gbs_x))
-            coeficients["Y"].append(matmul(Mbs_inv, Gbs_y))
-            coeficients["Z"].append(matmul(Mbs_inv, Gbs_z))
+            coeficients["X"].append(matmul(Mbs, Gbs_x))
+            coeficients["Y"].append(matmul(Mbs, Gbs_y))
+            coeficients["Z"].append(matmul(Mbs, Gbs_z))
 
         return coeficients
 
@@ -122,7 +122,7 @@ class BSpline(Shape):
 
         new_points.append(Vector3(x, y, z))
 
-        for _ in range(self.points_per_segment - 1):
+        for _ in range(self.points_per_segment-1):
             x = x + d_x
             y = y + d_y
             z = z + d_z
