@@ -1,6 +1,12 @@
 from vector3 import Vector3
 
-def ignore_lines_in_window_border(points: list[Vector3], transformed_points: list[Vector3], window_min: Vector3, window_max: Vector3) -> list[Vector3]:
+
+def ignore_lines_in_window_border(
+    points: list[Vector3],
+    transformed_points: list[Vector3],
+    window_min: Vector3,
+    window_max: Vector3,
+) -> list[Vector3]:
     returned_points = []
     for i in range(len(points) - 1):
         p1_in_window_border = False
@@ -8,7 +14,7 @@ def ignore_lines_in_window_border(points: list[Vector3], transformed_points: lis
         same_border = False
 
         p1x, p1y = points[i].x, points[i].y
-        p2x, p2y = points[i+1].x, points[i+1].y
+        p2x, p2y = points[i + 1].x, points[i + 1].y
 
         for limit in (window_max, window_min):
             wx, wy = limit.x, limit.y
@@ -26,12 +32,10 @@ def ignore_lines_in_window_border(points: list[Vector3], transformed_points: lis
             ):
                 same_border = True
 
-        if (
-            p1_in_window_border and p2_in_window_border and same_border
-        ): 
+        if p1_in_window_border and p2_in_window_border and same_border:
             continue
 
         returned_points.append(transformed_points[i])
-        returned_points.append(transformed_points[i+1])
+        returned_points.append(transformed_points[i + 1])
 
     return returned_points

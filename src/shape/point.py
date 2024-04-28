@@ -6,6 +6,7 @@ from vector3 import Vector3
 
 from .shape import Shape
 
+
 class Point(Shape):
     shape_name: str = "Point"
     clipper = PointClipper
@@ -20,11 +21,7 @@ class Point(Shape):
             f"p {vertices[self.__point]}"
         )
 
-    def draw(
-        self,
-        canvas: Canvas,
-        point: list[Vector3]
-    ):
+    def draw(self, canvas: Canvas, point: list[Vector3]):
         x, y = point[0]
         canvas.create_oval(
             x - self.radius,

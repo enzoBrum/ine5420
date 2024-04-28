@@ -7,7 +7,7 @@ import traceback
 import numpy as np
 
 from shape import Shape
-from transformations import center, rotate, translation
+from transformations import Transformer2D
 from vector3 import Vector3
 
 
@@ -41,13 +41,13 @@ class Window:
         self.points = deepcopy(self.__og_points)
 
     def ppc_transformation(self, shapes: list[Shape]):
-        wcx, wcy = center(self.points)
+        wcx, wcy = Transformer2D.center(self.points)
 
         points = deepcopy(self.points)
         for shape in shapes:
             points += deepcopy(shape.points)
 
-        translation(-wcx, -wcy, points)
+        Transformer2D.translation(Vector3(-wcx, -wcy), points)
 
         x = self.points[3].x - self.points[0].x
         y = self.points[3].y - self.points[0].y
@@ -55,7 +55,7 @@ class Window:
 
         print(degree)
         if abs(degree) > 1e-6:
-            rotate(degree, Vector3(wcx, wcy), points)
+            Transformer2D.rotate(degree, Vector3(wcx, wcy), points)
 
         i = 0
         for j in range(len(self.ppc_points)):

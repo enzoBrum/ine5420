@@ -12,19 +12,18 @@ from descritor_obj import DescritorOBJ
 from display_file import DisplayFile
 from event import Events
 from interface import Viewport, Window
-from shape import Curve2D, Line, Point, Shape, Wireframe, BSpline
-from transformations import center, rotate, scale, translation
+from shape import Curve2D, Line, Point, Shape, Wireframe, BSpline, Point3D
 from vector3 import Vector3
 from widgets import ShapeListbox, WindowControls
+from transformations import Transformer3D
 
 VIEWPORT_DIMENSION = (600, 600)
 GEOMETRY = "1000x1000"
 PROGRAM_NAME = "sistema básico de CG 2D"
 
 """
-TODO: suportar índices absolutos no object file
-TODO: preencher polígono com cor (canvas.create_polygon?)
-TODO: clipping de polígono
+TODO:
+    - window: move frente e tras, rotação sobre cada eixo
 """
 
 
@@ -137,9 +136,9 @@ class App:
 
     @redraw_viewport
     def rotate_window(self, e):
-        rotate(
+        Transformer3D.rotate(
             float(self.window_controls.window_step.get()),
-            Vector3(*center(self.window.points)),
+            Vector3(*Transformer3D.center(self.window.points)),
             self.window.points,
         )
 
@@ -157,47 +156,67 @@ class App:
 
     @redraw_viewport
     def translation(self, direction: str):
-        old_cx, old_cy = center(self.selected_shape.points)
+        old_cx, old_cy, old_cz = Transformer3D.center(self.selected_shape.points)
         xvar = float(self.window_controls.xvar.get())
         yvar = float(self.window_controls.yvar.get())
-        using_object_center = abs(old_cx - xvar) < 1e-6 and abs(old_cy - yvar) < 1e-6
+        zvar = float(self.window_controls.zvar.get())
+        using_object_center = (
+            abs(old_cx - xvar) < 1e-6
+            and abs(old_cy - yvar) < 1e-6
+            and abs(old_cz - zvar)
+        )
 
-        vup = [
-            self.window.points[3].x - self.window.points[0].x,
-            self.window.points[3].y - self.window.points[0].y,
-            1,
-        ]
+        # TODO: lidar com o "vup"
+        # TODO: suportar diferentes valores para o vetor de translação.
 
-        vup_normalized = np.array(vup) / np.linalg.norm(vup)
+        # vup = [
+        #     self.window.points[3].x - self.window.points[0].x,
+        #     self.window.points[3].y - self.window.points[0].y,
+        #     self.window.points[3].z - self.window.points[0].z,
+        # ]
 
-        step = 10
-        if direction == "R":
-            displacement_vector = np.cross(vup_normalized, [0, 0, 1]) * step
-        elif direction == "L":
-            displacement_vector = -np.cross(vup_normalized, [0, 0, 1]) * step
-        # Up and Down dont need np.cross
-        elif direction == "U":
-            displacement_vector = vup_normalized * step
-        else:
-            displacement_vector = -vup_normalized * step
+        # vup_normalized = np.array(vup) / np.linalg.norm(vup)
 
-        for i in range(len(self.selected_shape.points)):
-            self.selected_shape.points[i] += Vector3.from_array(displacement_vector)
+        # step = 10
+        # if direction == "R":
+        #     displacement_vector = np.cross(vup_normalized, [0, 0, 1]) * step
+        # elif direction == "L":
+        #     displacement_vector = -np.cross(vup_normalized, [0, 0, 1]) * step
+        # # Up and Down dont need np.cross
+        # elif direction == "U":
+        #     displacement_vector = vup_normalized * step
+        # elif direction == "D":
+        #     displacement_vector = -vup_normalized * step
+        # elif direction == "B":
+        #     displacement_vector = np.cross(vup_normalized, [0, 1, 0]) * step
+        # else:
+
+        # for i in range(len(self.selected_shape.points)):
+        #     self.selected_shape.points[i] += Vector3.from_array(displacement_vector)
+
+        self.selected_shape.transformer.translation(
+            Vector3(10, 10, 10), self.selected_shape.points
+        )
 
         if using_object_center:
-            new_cx, new_cy = center(self.selected_shape.points)
+            new_cx, new_cy, new_cz = Transformer3D.center(self.selected_shape.points)
             self.window_controls.xvar.set(new_cx)
             self.window_controls.yvar.set(new_cy)
+            self.window_controls.zvar.set(new_cz)
 
     @redraw_viewport
     def scale(self, factor: str):
-        scale(1.2 if factor == "+" else 0.8, self.selected_shape.points)
+        self.selected_shape.transformer.scale(
+            1.2 if factor == "+" else 0.8, self.selected_shape.points
+        )
 
     @redraw_viewport
     def rotate(self, data: str):
         data = json.loads(data)
-        rotate(
-            data["degree"], Vector3(data["x"], data["y"], 1), self.selected_shape.points
+        self.selected_shape.transformer.rotate(
+            data["degree"],
+            Vector3(data["x"], data["y"], data["z"]),
+            self.selected_shape.points,
         )
 
     @redraw_viewport
@@ -218,9 +237,10 @@ class App:
         print("Color: %s" % self.selected_shape_old_color)
         self.selected_shape.color = "gold"
 
-        cx, cy = center(self.selected_shape.points)
+        cx, cy, cz = Transformer3D.center(self.selected_shape.points)
         self.window_controls.xvar.set(cx)
         self.window_controls.yvar.set(cy)
+        self.window_controls.zvar.set(cz)
 
         print(f"Selected shape: {self.selected_shape}")
 
@@ -305,24 +325,24 @@ class App:
 
         self.add_shape(
             json.dumps(
-               {
-                   "type": "point",
-                   "points": [(50,10)],
-                   "name": "aaa",
-                   "color": self.shape_listbox.add_object.color_hex_name["blue"],
-               }
-           )
+                {
+                    "type": "point",
+                    "points": [(50, 10)],
+                    "name": "aaa",
+                    "color": self.shape_listbox.add_object.color_hex_name["blue"],
+                }
+            )
         )
 
         self.add_shape(
-           json.dumps(
-               {
-                   "type": "line",
-                   "points": [(100, 100), (500, 500)],
-                   "name": "Foo",
-                   "color": self.shape_listbox.add_object.color_hex_name["blue"],
-               }
-           )
+            json.dumps(
+                {
+                    "type": "line",
+                    "points": [(100, 100), (500, 500)],
+                    "name": "Foo",
+                    "color": self.shape_listbox.add_object.color_hex_name["blue"],
+                }
+            )
         )
         self.add_shape(
             json.dumps(

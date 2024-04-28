@@ -22,10 +22,7 @@ class BSpline(Shape):
     ) -> None:
         super().__init__(points, name, color)
 
-        if points_per_segment > 100:
-            self.points_per_segment = 100
-        else:
-            self.points_per_segment = points_per_segment
+        self.points_per_segment = min(max(points_per_segment, 100), 1000)
 
         self.__calculate_delta_matrix()
         self.__bsplines()
@@ -45,7 +42,6 @@ class BSpline(Shape):
         return ignore_lines_in_window_border(
             points, transformed_points, window_min, window_max
         )
-    
 
     def __bsplines(self) -> None:
         new_points = []
@@ -122,7 +118,7 @@ class BSpline(Shape):
 
         new_points.append(Vector3(x, y, z))
 
-        for _ in range(self.points_per_segment-1):
+        for _ in range(self.points_per_segment - 1):
             x = x + d_x
             y = y + d_y
             z = z + d_z

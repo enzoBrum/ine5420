@@ -5,6 +5,7 @@ from typing import Optional
 from uuid import uuid4
 
 from clipping import Clipper
+from transformations import Transformer
 from vector3 import Vector3
 
 
@@ -15,6 +16,7 @@ class Shape(ABC):
     points: list[Vector3]
     ppc_points: list[Vector3]
     clipper: Clipper
+    transformer: Transformer
 
     def __init__(
         self, points: list[Vector3], name: Optional[str] = None, color: str = "red"
@@ -33,11 +35,13 @@ class Shape(ABC):
     ) -> str: ...
 
     @abstractmethod
-    def draw(
-        self,
-        canvas: Canvas,
-        points: list[Vector3]
-    ): ...
+    def draw(self, canvas: Canvas, points: list[Vector3]): ...
 
-    def process_clipped_points(self, points: list[Vector3], transformed_points: list[Vector3], window_min: Vector3, window_max: Vector3) -> list[Vector3]:
+    def process_clipped_points(
+        self,
+        points: list[Vector3],
+        transformed_points: list[Vector3],
+        window_min: Vector3,
+        window_max: Vector3,
+    ) -> list[Vector3]:
         return transformed_points

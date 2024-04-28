@@ -23,10 +23,7 @@ class Curve2D(Shape):
         points_per_segment: int = 10,
     ) -> None:
         super().__init__(points, name, color)
-        if points_per_segment > 100:
-            self.points_per_segment = 100
-        else:
-            self.points_per_segment = points_per_segment
+        self.points_per_segment = min(max(points_per_segment, 100), 1000)
         self.__bezier()
 
     def __bezier(self) -> None:
