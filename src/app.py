@@ -4,18 +4,15 @@ from tkinter import E, N, S, Tk, W, ttk
 import traceback
 from typing import Callable
 
-import numpy as np
-import sv_ttk
-
 from clipping import CohenSutherland, LiangBarsky
 from descritor_obj import DescritorOBJ
 from display_file import DisplayFile
 from event import Events
 from interface import Viewport, Window
-from shape import Curve2D, Line, Point, Shape, Wireframe, BSpline, Point3D
+from shape import BSpline, Curve2D, Line, Point, Shape, Wireframe, Wireframe3D
+from transformations import Transformer3D
 from vector3 import Vector3
 from widgets import ShapeListbox, WindowControls
-from transformations import Transformer3D
 
 VIEWPORT_DIMENSION = (600, 600)
 GEOMETRY = "1000x1000"
@@ -47,31 +44,24 @@ class App:
 
         return wrapper
 
-    def bind_event(
-        self, callback: Callable[[str | None], None], event: str, has_data: bool = True
-    ):
+    def bind_event(self, callback: Callable[[str | None], None], event: str, has_data: bool = True):
         if not has_data:
             self.root.bind(event, callback)
         else:
             # tkinter does not handle events that send data.
             # see: https://stackoverflow.com/a/41912425
-            self.root.call(
-                "bind", str(self.root), event, self.root.register(callback) + " %d"
-            )
+            self.root.call("bind", str(self.root), event, self.root.register(callback) + " %d")
 
     @redraw_viewport
     def add_shape(self, data: str):
         try:
             data = json.loads(data)
 
-            points = [Vector3(x, y) for x, y in data["points"]]
+            points = [Vector3(*coords) for coords in data["points"]]
             name = data["name"]
 
             idx = 1
-            while (
-                self.display_file.get_shape_by_id(f"{data['type'].title()}[{name}]")
-                is not None
-            ):
+            while self.display_file.get_shape_by_id(f"{data['type'].title()}[{name}]") is not None:
                 if name.endswith(f"-{idx-1}"):
                     name = name.replace(f"-{idx-1}", f"-{idx}")
                 else:
@@ -106,6 +96,8 @@ class App:
                         color,
                         int(data["points_per_segment"]),
                     )
+                case "wireframe3d":
+                    shape = Wireframe3D(points, False, name, color)
 
             print(f"Added shape: {shape}")
             self.display_file.append(shape)
@@ -116,9 +108,7 @@ class App:
     def save_shapes(self, filename):
         if self.selected_shape:
             self.selected_shape.color = self.selected_shape_old_color
-        DescritorOBJ.save(
-            self.display_file, self.shape_listbox.add_object.color_hex_name, filename
-        )
+        DescritorOBJ.save(self.display_file, self.shape_listbox.add_object.color_hex_name, filename)
 
         if self.selected_shape:
             self.selected_shape.color = "gold"
@@ -127,9 +117,7 @@ class App:
     def load_shapes(self, filename):
         self.display_file, hex_color_names = DescritorOBJ.load(filename)
 
-        names_color_hex = {
-            name: color_hex for color_hex, name in hex_color_names.items()
-        }
+        names_color_hex = {name: color_hex for color_hex, name in hex_color_names.items()}
         self.shape_listbox.add_object.color_hex_name |= names_color_hex
         self.shape_listbox.shapes_str_var.set(self.display_file._shapes)
         self.window.reset()
@@ -144,15 +132,11 @@ class App:
 
     @redraw_viewport
     def move_window(self, direction: str):
-        self.window.move(
-            direction.upper(), float(self.window_controls.window_step.get())
-        )
+        self.window.move(direction.upper(), float(self.window_controls.window_step.get()))
 
     @redraw_viewport
     def zoom(self, factor: str):
-        self.window.zoom(
-            1 if factor == "+" else -1, float(self.window_controls.window_step.get())
-        )
+        self.window.zoom(1 if factor == "+" else -1, float(self.window_controls.window_step.get()))
 
     @redraw_viewport
     def translation(self, direction: str):
@@ -160,11 +144,7 @@ class App:
         xvar = float(self.window_controls.xvar.get())
         yvar = float(self.window_controls.yvar.get())
         zvar = float(self.window_controls.zvar.get())
-        using_object_center = (
-            abs(old_cx - xvar) < 1e-6
-            and abs(old_cy - yvar) < 1e-6
-            and abs(old_cz - zvar)
-        )
+        using_object_center = abs(old_cx - xvar) < 1e-6 and abs(old_cy - yvar) < 1e-6 and abs(old_cz - zvar)
 
         # TODO: lidar com o "vup"
         # TODO: suportar diferentes valores para o vetor de translação.
@@ -194,9 +174,7 @@ class App:
         # for i in range(len(self.selected_shape.points)):
         #     self.selected_shape.points[i] += Vector3.from_array(displacement_vector)
 
-        self.selected_shape.transformer.translation(
-            Vector3(10, 10, 10), self.selected_shape.points
-        )
+        self.selected_shape.transformer.translation(Vector3(10, 10, 10), self.selected_shape.points)
 
         if using_object_center:
             new_cx, new_cy, new_cz = Transformer3D.center(self.selected_shape.points)
@@ -206,9 +184,7 @@ class App:
 
     @redraw_viewport
     def scale(self, factor: str):
-        self.selected_shape.transformer.scale(
-            1.2 if factor == "+" else 0.8, self.selected_shape.points
-        )
+        self.selected_shape.transformer.scale(1.2 if factor == "+" else 0.8, self.selected_shape.points)
 
     @redraw_viewport
     def rotate(self, data: str):
@@ -268,9 +244,7 @@ class App:
         self.viewport.canvas.grid(column=0, row=1)
 
     def __create_left_menu(self):
-        menu_frame = ttk.Frame(
-            self.frame, padding="12 -3 12 12", border=3, borderwidth=3, relief="groove"
-        )
+        menu_frame = ttk.Frame(self.frame, padding="12 -3 12 12", border=3, borderwidth=3, relief="groove")
         menu_frame.grid(column=0, row=0)
 
         ttk.Label(menu_frame, text="Menu de Funções").grid(column=0, row=0, sticky="n")
@@ -299,9 +273,7 @@ class App:
         self.bind_event(self.add_shape, Events.ADD_SHAPE, True)
         self.bind_event(self.save_shapes, Events.SAVE_SHAPES, True)
         self.bind_event(self.load_shapes, Events.LOAD_SHAPES, True)
-        self.bind_event(
-            self.change_line_clipping, Events.CHANGE_CLIPPING_ALGORITHM, True
-        )
+        self.bind_event(self.change_line_clipping, Events.CHANGE_CLIPPING_ALGORITHM, True)
 
     def __init__(self):
         self.root = Tk()
@@ -326,14 +298,34 @@ class App:
         self.add_shape(
             json.dumps(
                 {
-                    "type": "point",
-                    "points": [(50, 10)],
-                    "name": "aaa",
+                    "type": "wireframe3d",
+                    "points": [
+                        (-30, -30, -30),
+                        (-30, -30, 30),
+                        (-30, 30, -30),
+                        (-30, 30, 30),
+                        (30, -30, -30),
+                        (30, -30, 30),
+                        (30, 30, -30),
+                        (30, 30, 30),
+                    ],
+                    "name": "foo",
                     "color": self.shape_listbox.add_object.color_hex_name["blue"],
                 }
             )
         )
 
+        # self.add_shape(
+        #     json.dumps(
+        #         {
+        #             "type": "point",
+        #             "points": [(50, 10)],
+        #             "name": "aaa",
+        #             "color": self.shape_listbox.add_object.color_hex_name["blue"],
+        #         }
+        #     )
+        # )
+        #
         self.add_shape(
             json.dumps(
                 {
@@ -344,57 +336,57 @@ class App:
                 }
             )
         )
-        self.add_shape(
-            json.dumps(
-                {
-                    "type": "wireframe",
-                    "points": [(0, 500), (100, 600), (150, 500)],
-                    "name": "Bar-1",
-                    "color": self.shape_listbox.add_object.color_hex_name["red"],
-                    "fill": "false",
-                }
-            )
-        )
-
-        self.add_shape(
-            json.dumps(
-                {
-                    "type": "curve2d",
-                    "points": [
-                        (50, 10),
-                        (50, 120),
-                        (300, 120),
-                        (300, 10),
-                        (300, -120),
-                        (430, 70),
-                        (470, 10),
-                    ],
-                    "name": "Baz",
-                    "color": self.shape_listbox.add_object.color_hex_name["green"],
-                    "points_per_segment": 1000,
-                }
-            )
-        )
-
-        self.add_shape(
-            json.dumps(
-                {
-                    "type": "bspline",
-                    "points": [
-                        (50, 10),
-                        (50, 120),
-                        (300, 120),
-                        (300, 10),
-                        (300, -120),
-                        (430, 70),
-                        (470, 10),
-                    ],
-                    "name": "Qux",
-                    "color": self.shape_listbox.add_object.color_hex_name["red"],
-                    "points_per_segment": 1000,
-                }
-            )
-        )
+        # self.add_shape(
+        #     json.dumps(
+        #         {
+        #             "type": "wireframe",
+        #             "points": [(0, 500), (100, 600), (150, 500)],
+        #             "name": "Bar-1",
+        #             "color": self.shape_listbox.add_object.color_hex_name["red"],
+        #             "fill": "false",
+        #         }
+        #     )
+        # )
+        #
+        # self.add_shape(
+        #     json.dumps(
+        #         {
+        #             "type": "curve2d",
+        #             "points": [
+        #                 (50, 10),
+        #                 (50, 120),
+        #                 (300, 120),
+        #                 (300, 10),
+        #                 (300, -120),
+        #                 (430, 70),
+        #                 (470, 10),
+        #             ],
+        #             "name": "Baz",
+        #             "color": self.shape_listbox.add_object.color_hex_name["green"],
+        #             "points_per_segment": 1000,
+        #         }
+        #     )
+        # )
+        #
+        # self.add_shape(
+        #     json.dumps(
+        #         {
+        #             "type": "bspline",
+        #             "points": [
+        #                 (50, 10),
+        #                 (50, 120),
+        #                 (300, 120),
+        #                 (300, 10),
+        #                 (300, -120),
+        #                 (430, 70),
+        #                 (470, 10),
+        #             ],
+        #             "name": "Qux",
+        #             "color": self.shape_listbox.add_object.color_hex_name["red"],
+        #             "points_per_segment": 1000,
+        #         }
+        #     )
+        # )
 
     def run(self):
         self.root.mainloop()

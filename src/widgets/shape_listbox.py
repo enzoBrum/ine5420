@@ -53,12 +53,8 @@ class ShapeListbox:
             text="Clear Selection",
             command=lambda: self.__update_selected_shape(None, clear_selection=True),
         ).grid(column=1, row=0, sticky="w")
-        ttk.Button(button_frame, text="Save", command=self.save_shapes).grid(
-            column=0, row=1
-        )
-        ttk.Button(button_frame, text="Load", command=self.load_shapes).grid(
-            column=1, row=1, sticky="w"
-        )
+        ttk.Button(button_frame, text="Save", command=self.save_shapes).grid(column=0, row=1)
+        ttk.Button(button_frame, text="Load", command=self.load_shapes).grid(column=1, row=1, sticky="w")
 
     def __update_selected_shape(self, event: Event, clear_selection: bool = False):
         if clear_selection:
@@ -67,14 +63,10 @@ class ShapeListbox:
 
         index = event.widget.curselection()
         if index:
-            self.root.event_generate(
-                Events.SELECT_SHAPE, data=event.widget.get(index[0])
-            )
+            self.root.event_generate(Events.SELECT_SHAPE, data=event.widget.get(index[0]))
 
     def save_shapes(self):
-        filename = filedialog.asksaveasfilename(
-            filetypes=[("Wavefront Object", "*.obj")]
-        )
+        filename = filedialog.asksaveasfilename(filetypes=[("Wavefront Object", "*.obj")])
         if filename:
             self.root.event_generate(Events.SAVE_SHAPES, data=filename)
 

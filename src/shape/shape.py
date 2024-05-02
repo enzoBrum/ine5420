@@ -18,9 +18,7 @@ class Shape(ABC):
     clipper: Clipper
     transformer: Transformer
 
-    def __init__(
-        self, points: list[Vector3], name: Optional[str] = None, color: str = "red"
-    ) -> None:
+    def __init__(self, points: list[Vector3], name: Optional[str] = None, color: str = "red") -> None:
         self.color = color
         self.name = name if name else uuid4().hex
         self.points = points
@@ -30,9 +28,7 @@ class Shape(ABC):
         return f"{self.shape_name}[{self.name}]"
 
     @abstractmethod
-    def serialize(
-        self, vertices: dict[Vector3, int], hex_to_color: dict[str, str]
-    ) -> str: ...
+    def serialize(self, vertices: dict[Vector3, int], hex_to_color: dict[str, str]) -> str: ...
 
     @abstractmethod
     def draw(self, canvas: Canvas, points: list[Vector3]): ...

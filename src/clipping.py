@@ -2,17 +2,19 @@ from abc import ABC, abstractmethod
 
 from vector3 import Vector3
 
+
 class Clipper(ABC):
     @classmethod
     @abstractmethod
-    def clip(cls, points: list[Vector3], window_max: Vector3, window_min: Vector3) -> list[Vector3]:
-        ...
+    def clip(cls, points: list[Vector3], window_max: Vector3, window_min: Vector3) -> list[Vector3]: ...
+
 
 class PointClipper(Clipper):
     @classmethod
     def clip(cls, points: list[Vector3], window_max: Vector3, window_min: Vector3) -> list[Vector3]:
-        x, y = points[0]
+        x, y, _ = points[0]
         return points if window_min.x <= x <= window_max.x and window_min.y <= y <= window_max.y else []
+
 
 class LiangBarsky(Clipper):
     @classmethod
@@ -56,6 +58,7 @@ class LiangBarsky(Clipper):
 
         return [Vector3(x1, y1), Vector3(x2, y2)]
 
+
 class CohenSutherland(Clipper):
     @classmethod
     def __get_rc(cls, x: float, y: float, xw_min: float, xw_max: float, yw_min: float, yw_max: float) -> int:
@@ -82,8 +85,8 @@ class CohenSutherland(Clipper):
         yw_max = window_max.y
 
         p1, p2 = points
-        x1, y1 = p1
-        x2, y2 = p2
+        x1, y1, _ = p1
+        x2, y2, _ = p2
 
         if x1 > x2:
             x1, y1, x2, y2 = x2, y2, x1, y1
@@ -225,6 +228,7 @@ class CohenSutherland(Clipper):
         # print(f"X1: {x1}, X2: {x2}, Y1: {y1}, Y2: {y2}, XW_MAX: {xw_max}")
         return [Vector3(x1, y1), Vector3(x2, y2)]
 
+
 class SutherlandHodgman(Clipper):
     @classmethod
     def clip(cls, points: list[Vector3], window_max: Vector3, window_min: Vector3) -> list[Vector3]:
@@ -235,23 +239,19 @@ class SutherlandHodgman(Clipper):
             q = points[(i + 1) % len(points)]
             print(f"P: {p}, Q: {q}")
 
-            p_inside = (window_min.x <= p.x <= window_max.x) and (
-                window_min.y <= p.y <= window_max.y
-            )
-            q_inside = (window_min.x <= q.x <= window_max.x) and (
-                window_min.y <= q.y <= window_max.y
-            )
+            p_inside = (window_min.x <= p.x <= window_max.x) and (window_min.y <= p.y <= window_max.y)
+            q_inside = (window_min.x <= q.x <= window_max.x) and (window_min.y <= q.y <= window_max.y)
 
             if p_inside and q_inside:
                 print("P e Q dentro")
                 points_list.append(q)
             elif p_inside and not q_inside:
                 print("P dentro e Q fora")
-                intersect = LiangBarsky.clip([p,q], window_max, window_min)
+                intersect = LiangBarsky.clip([p, q], window_max, window_min)
                 points_list.append(intersect[1])
             elif not p_inside and q_inside:
                 print("P fora e Q dentro")
-                intersect = LiangBarsky.clip([p,q], window_max, window_min)
+                intersect = LiangBarsky.clip([p, q], window_max, window_min)
                 if intersect[0] == q:
                     points_list.append(intersect[1])
                 else:
@@ -259,7 +259,7 @@ class SutherlandHodgman(Clipper):
                 points_list.append(q)
             elif not p_inside and not q_inside:
                 print("P e Q fora")
-                intersect = LiangBarsky.clip([p,q], window_max, window_min)
+                intersect = LiangBarsky.clip([p, q], window_max, window_min)
                 if len(intersect) > 0:
                     points_list.append(intersect[0])
                     points_list.append(intersect[1])
@@ -268,24 +268,16 @@ class SutherlandHodgman(Clipper):
                     # polygon.ppc_inexistent_lines.add(
                     #     (i % len(polygon.ppc_points), (i + 1) % len(polygon.ppc_points))
                     # )
-                    if (p.x < window_min.x and q.y < window_min.y) or (
-                        q.x < window_min.x and p.y < window_min.y
-                    ):
+                    if (p.x < window_min.x and q.y < window_min.y) or (q.x < window_min.x and p.y < window_min.y):
                         points_list.append(Vector3(window_min.x, window_min.y, 1))
                         extra_points += 1
-                    if (p.x < window_min.x and q.y > window_max.y) or (
-                        q.x < window_min.x and p.y > window_max.y
-                    ):
+                    if (p.x < window_min.x and q.y > window_max.y) or (q.x < window_min.x and p.y > window_max.y):
                         points_list.append(Vector3(window_min.x, window_max.y, 1))
                         extra_points += 1
-                    if (p.x > window_max.x and q.y > window_max.y) or (
-                        q.x > window_max.x and p.y > window_max.y
-                    ):
+                    if (p.x > window_max.x and q.y > window_max.y) or (q.x > window_max.x and p.y > window_max.y):
                         points_list.append(Vector3(window_max.x, window_max.y, 1))
                         extra_points += 1
-                    if (p.x > window_max.x and q.y < window_min.y) or (
-                        q.x > window_max.x and p.y < window_min.y
-                    ):
+                    if (p.x > window_max.x and q.y < window_min.y) or (q.x > window_max.x and p.y < window_min.y):
                         points_list.append(Vector3(window_max.x, window_min.y, 1))
                         extra_points += 1
 
@@ -295,6 +287,7 @@ class SutherlandHodgman(Clipper):
 
         return points_list
 
+
 class BezierClipper(Clipper):
     @classmethod
     def clip(cls, points: list[Vector3], window_max: Vector3, window_min: Vector3) -> list[Vector3]:
@@ -302,7 +295,7 @@ class BezierClipper(Clipper):
         for i in range(len(points) - 1):
             p1, p2 = points[i], points[i + 1]
 
-            line = LiangBarsky.clip([p1,p2], window_max, window_min)
+            line = LiangBarsky.clip([p1, p2], window_max, window_min)
             if len(line):
                 returned_points.append(line[0])
 

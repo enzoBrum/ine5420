@@ -19,9 +19,7 @@ class WindowControls:
         row: int,
     ):
         self.root = root
-        self.frame = ttk.Frame(
-            root, padding="12 -3 12 12", border=3, borderwidth=3, relief="groove"
-        )
+        self.frame = ttk.Frame(root, padding="12 -3 12 12", border=3, borderwidth=3, relief="groove")
 
         self.frame.grid(column=column, row=row, sticky="nswe", pady=12)
         self.frame.grid_columnconfigure(0, weight=1)
@@ -29,13 +27,9 @@ class WindowControls:
 
         ttk.Label(self.frame, text="Window").grid(column=0, row=0, sticky="nw")
 
-        ttk.Label(self.frame, text="Step/Rotation angle:").grid(
-            column=0, row=1, sticky="w"
-        )
+        ttk.Label(self.frame, text="Step/Rotation angle:").grid(column=0, row=1, sticky="w")
 
-        ttk.Entry(self.frame, textvariable=self.window_step).grid(
-            column=1, row=1, sticky="w"
-        )
+        ttk.Entry(self.frame, textvariable=self.window_step).grid(column=1, row=1, sticky="w")
 
         move_controls_frame = ttk.Frame(self.frame, padding="3 30 3 3")
         move_controls_frame.grid(column=0, row=2, columnspan=2, rowspan=2)
@@ -84,9 +78,7 @@ class WindowControls:
 
         move_object_frame = ttk.Frame(self.frame, padding="3 30 3 3")
         move_object_frame.grid(column=0, row=5, columnspan=1)
-        ttk.Label(move_object_frame, text="Object Translation:").grid(
-            row=0, column=0, padx=5
-        )
+        ttk.Label(move_object_frame, text="Object Translation:").grid(row=0, column=0, padx=5)
         ttk.Button(
             move_object_frame,
             text="Up",
@@ -134,9 +126,7 @@ class WindowControls:
             relief="groove",
         )
         object_rotation_frame.grid(column=0, row=9, pady=12)
-        ttk.Label(object_rotation_frame, text="Rotation").grid(
-            row=0, column=0, sticky="n"
-        )
+        ttk.Label(object_rotation_frame, text="Rotation").grid(row=0, column=0, sticky="n")
         ttk.Label(object_rotation_frame, text="Degree:").grid(row=1, column=0)
 
         degree_var = StringVar(value="45")
@@ -193,16 +183,12 @@ class WindowControls:
             text=cohen,
             value=cohen,
             variable=self.clipping_algorithm,
-            command=lambda: self.frame.event_generate(
-                Events.CHANGE_CLIPPING_ALGORITHM, data="cohen"
-            ),
+            command=lambda: self.frame.event_generate(Events.CHANGE_CLIPPING_ALGORITHM, data="cohen"),
         ).grid(column=0, row=1, sticky="W")
         ttk.Radiobutton(
             clipping_frame,
             text=liang,
             value=liang,
             variable=self.clipping_algorithm,
-            command=lambda: self.frame.event_generate(
-                Events.CHANGE_CLIPPING_ALGORITHM, data="liang"
-            ),
+            command=lambda: self.frame.event_generate(Events.CHANGE_CLIPPING_ALGORITHM, data="liang"),
         ).grid(column=0, row=2, sticky="W")

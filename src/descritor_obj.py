@@ -81,15 +81,11 @@ class DescritorOBJ:
                     if first_word == "newmtl":
                         color_name = curr_line.split()[1]
 
-                        while not curr_line.startswith(
-                            "Ka"
-                        ) and not curr_line.startswith("Kd"):
+                        while not curr_line.startswith("Ka") and not curr_line.startswith("Kd"):
                             i += 1
                             curr_line = lines[i]
 
-                        color_hex = cls.rgb_to_hex(
-                            [float(val) for val in curr_line.split()[1:]]
-                        )
+                        color_hex = cls.rgb_to_hex([float(val) for val in curr_line.split()[1:]])
 
                         hex_color_names[color_hex] = color_name
 
@@ -184,13 +180,9 @@ class DescritorOBJ:
         if not len(display_file):
             return
 
-        hex_color_name = {
-            color_hex: color_name for color_name, color_hex in name_color_hex.items()
-        }
+        hex_color_name = {color_hex: color_name for color_name, color_hex in name_color_hex.items()}
 
-        mtl_path = (
-            path + ".mtl" if not path.endswith(".obj") else path.replace(".obj", ".mtl")
-        )
+        mtl_path = path + ".mtl" if not path.endswith(".obj") else path.replace(".obj", ".mtl")
         with open(mtl_path, "w") as file:
             for color_hex, name in hex_color_name.items():
                 file.write(f"newmtl {name}\n")
@@ -209,9 +201,7 @@ class DescritorOBJ:
                 points_idx[p] = len(points_idx) + 1
 
             file.write(f"mtllib {os.path.basename(mtl_path)}\n\n")
-            file.writelines(
-                [f"v {point.x} {point.y} {point.z}\n" for point in points_idx]
-            )
+            file.writelines([f"v {point.x} {point.y} {point.z}\n" for point in points_idx])
             file.write("\n")
 
             for shape in display_file:

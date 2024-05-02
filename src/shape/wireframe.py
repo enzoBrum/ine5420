@@ -22,14 +22,8 @@ class Wireframe(Shape):
         self.fill = fill
         super().__init__(points, name, color)
 
-    def serialize(
-        self, vertices: dict[Vector3, int], hex_to_color: dict[str, str]
-    ) -> str:
-        return (
-            f"o {self.name}\n"
-            f"usemtl {hex_to_color[self.color]}\n"
-            f"f {' '.join([vertices[p] for p in self.points])}"
-        )
+    def serialize(self, vertices: dict[Vector3, int], hex_to_color: dict[str, str]) -> str:
+        return f"o {self.name}\nusemtl {hex_to_color[self.color]}\nf {' '.join([vertices[p] for p in self.points])}"
 
     def process_clipped_points(
         self,
@@ -43,9 +37,7 @@ class Wireframe(Shape):
 
         points.append(points[0])
         transformed_points.append(transformed_points[0])
-        return ignore_lines_in_window_border(
-            points, transformed_points, window_min, window_max
-        )
+        return ignore_lines_in_window_border(points, transformed_points, window_min, window_max)
 
     def draw(self, canvas: Canvas, points: list[Vector3]):
         if self.fill:

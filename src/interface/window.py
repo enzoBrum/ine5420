@@ -1,6 +1,6 @@
 from copy import deepcopy
 from hmac import new
-from math import atan2, degrees
+from math import atan2, degrees, pi
 from tkinter import StringVar
 import traceback
 
@@ -41,33 +41,25 @@ class Window:
         self.points = deepcopy(self.__og_points)
 
     def ppc_transformation(self, shapes: list[Shape]):
-        wcx, wcy = Transformer2D.center(self.points)
 
-        points = deepcopy(self.points)
+        transformer = Transformer2D()
+        wcx, wcy, _ = transformer.center(self.ppc_points)
+
+        transformer.points = self.ppc_points[:]
         for shape in shapes:
-            points += deepcopy(shape.points)
+            transformer.points += shape.ppc_points
 
-        Transformer2D.translation(Vector3(-wcx, -wcy), points)
+        transformer.translation(Vector3(-wcx, -wcy))
 
-        x = self.points[3].x - self.points[0].x
-        y = self.points[3].y - self.points[0].y
-        degree = degrees(atan2(y, x)) - 90
+        x = transformer.points[3].x - transformer.points[0].x
+        y = transformer.points[3].y - transformer.points[0].y
+        degree = atan2(y, x) - pi / 2
 
-        print(degree)
         if abs(degree) > 1e-6:
-            Transformer2D.rotate(degree, Vector3(wcx, wcy), points)
+            transformer.rotate(degree, Vector3(wcx, wcy))
 
-        i = 0
-        for j in range(len(self.ppc_points)):
-            self.ppc_points[j] = points[i]
-            i += 1
-
-        for shape in shapes:
-            new_ppc = []
-            for j in range(len(shape.points)):
-                new_ppc.append(points[i])
-                i += 1
-            shape.ppc_points = new_ppc
+        transformer.apply()
+        print(transformer.points)
 
     @property
     def v_up(self) -> tuple[Vector3, Vector3]:
@@ -99,9 +91,7 @@ class Window:
             print("Window muito pequena!")
             return
 
-        print(
-            f"ZOOM:\n\twindow max: {self.max} --> {final_max}\n\twindow min: {self.min} --> {final_min}"
-        )
+        print(f"ZOOM:\n\twindow max: {self.max} --> {final_max}\n\twindow min: {self.min} --> {final_min}")
 
         self.points[0] += step
 

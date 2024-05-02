@@ -19,17 +19,11 @@ def ignore_lines_in_window_border(
         for limit in (window_max, window_min):
             wx, wy = limit.x, limit.y
 
-            p1_in_window_border = (
-                abs(p1x - wx) < 4 or abs(p1y - wy) < 4
-            ) or p1_in_window_border
+            p1_in_window_border = (abs(p1x - wx) < 4 or abs(p1y - wy) < 4) or p1_in_window_border
 
-            p2_in_window_border = (
-                abs(p2x - wx) < 4 or abs(p2y - wy) < 4
-            ) or p2_in_window_border
+            p2_in_window_border = (abs(p2x - wx) < 4 or abs(p2y - wy) < 4) or p2_in_window_border
 
-            if (abs(p1x - wx) < 4 and abs(p2x - wx) < 4) or (
-                abs(p1y - wy) < 4 and abs(p2y - wy) < 4
-            ):
+            if (abs(p1x - wx) < 4 and abs(p2x - wx) < 4) or (abs(p1y - wy) < 4 and abs(p2y - wy) < 4):
                 same_border = True
 
         if p1_in_window_border and p2_in_window_border and same_border:

@@ -27,9 +27,7 @@ class BSpline(Shape):
         self.__calculate_delta_matrix()
         self.__bsplines()
 
-    def serialize(
-        self, vertices: dict[Vector3, int], hex_to_color: dict[str, str]
-    ) -> str:
+    def serialize(self, vertices: dict[Vector3, int], hex_to_color: dict[str, str]) -> str:
         raise NotImplementedError
 
     def process_clipped_points(
@@ -39,9 +37,7 @@ class BSpline(Shape):
         window_min: Vector3,
         window_max: Vector3,
     ) -> list[Vector3]:
-        return ignore_lines_in_window_border(
-            points, transformed_points, window_min, window_max
-        )
+        return ignore_lines_in_window_border(points, transformed_points, window_min, window_max)
 
     def __bsplines(self) -> None:
         new_points = []
@@ -107,9 +103,7 @@ class BSpline(Shape):
 
         return coeficients
 
-    def __calculate_segment_points(
-        self, x_delta: array, y_delta: array, z_delta: array
-    ) -> list[Vector3]:
+    def __calculate_segment_points(self, x_delta: array, y_delta: array, z_delta: array) -> list[Vector3]:
         new_points = []
 
         x, d_x, d2_x, d3_x = x_delta

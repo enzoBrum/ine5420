@@ -72,9 +72,7 @@ class Curve2D(Shape):
         self.ppc_points = deepcopy(self.points)
         print(self.points)
 
-    def serialize(
-        self, vertices: dict[Vector3, int], hex_to_color: dict[str, str]
-    ) -> str:
+    def serialize(self, vertices: dict[Vector3, int], hex_to_color: dict[str, str]) -> str:
         raise NotImplementedError
 
     def process_clipped_points(
@@ -84,9 +82,7 @@ class Curve2D(Shape):
         window_min: Vector3,
         window_max: Vector3,
     ) -> list[Vector3]:
-        return ignore_lines_in_window_border(
-            points, transformed_points, window_min, window_max
-        )
+        return ignore_lines_in_window_border(points, transformed_points, window_min, window_max)
 
     def draw(self, canvas: Canvas, points: list[Vector3]):
         new_points = []
