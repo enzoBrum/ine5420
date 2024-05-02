@@ -20,6 +20,9 @@ class Vector3:
 
         return Vector3(self.x + other.x, self.y + other.y, self.z + other.z)
 
+    def __len__(self):
+        return 3
+
     def __iter__(self):
         yield self.x
         yield self.y

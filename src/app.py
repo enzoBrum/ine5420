@@ -148,7 +148,7 @@ class App:
         xvar = float(self.window_controls.xvar.get())
         yvar = float(self.window_controls.yvar.get())
         # zvar = float(self.window_controls.zvar.get())
-        using_object_center = abs(old_cx - xvar) < 1e-6 and abs(old_cy - yvar) < 1e-6 and abs(old_cz - 0) < 1e-6
+        using_object_center = abs(old_cx - xvar) < 1e-6 and abs(old_cy - yvar) < 1e-6
 
         # TODO: lidar com o "vup"
         # TODO: suportar diferentes valores para o vetor de translação.
@@ -178,7 +178,16 @@ class App:
         # for i in range(len(self.selected_shape.points)):
         #     self.selected_shape.points[i] += Vector3.from_array(displacement_vector)
 
-        transformer.translation(Vector3(10, 10, 10), self.selected_shape.points)
+        match direction:
+            case "R":
+                vec = Vector3(10, 0, 0)
+            case "L":
+                vec = Vector3(-10, 0, 0)
+            case "U":
+                vec = Vector3(0, 10, 0)
+            case "D":
+                vec = Vector3(0, -10, 0)
+        transformer.translation(vec)
         transformer.apply()
 
         if using_object_center:

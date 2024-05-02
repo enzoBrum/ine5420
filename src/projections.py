@@ -14,6 +14,7 @@ if TYPE_CHECKING:
 
 def parallel_projection(window: "Window", display_file: DisplayFile):
 
+    # FIXME: Isso tá errado. O vpn tem que terminar sendo (0, 0, 1) :(
     window_min = window.min
     window_max = window.max
 
