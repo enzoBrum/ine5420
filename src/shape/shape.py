@@ -24,6 +24,8 @@ class Shape(ABC):
         self.points = points
         self.ppc_points = deepcopy(points)
 
+        self.transformer = self.transformer(self.points)
+
     def __str__(self) -> str:
         return f"{self.shape_name}[{self.name}]"
 

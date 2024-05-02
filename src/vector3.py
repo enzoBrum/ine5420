@@ -10,9 +10,9 @@ class Vector3:
     z: float
 
     def __init__(self, x: float, y: float, z: float = 1):
-        self.x = x
-        self.y = y
-        self.z = z
+        self.x = round(x, 6)
+        self.y = round(y, 6)
+        self.z = round(z, 6)
 
     def __add__(self, other: Union["Vector3", int]) -> "Vector3":
         if not isinstance(other, Vector3) and isinstance(other, (int, float)):

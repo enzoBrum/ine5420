@@ -41,6 +41,7 @@ class Window:
         self.points = deepcopy(self.__og_points)
 
     def ppc_transformation(self, shapes: list[Shape]):
+        print(f"{self.ppc_points=}, {len(self.ppc_points)=}")
 
         transformer = Transformer2D()
         wcx, wcy, _ = transformer.center(self.ppc_points)
@@ -49,7 +50,11 @@ class Window:
         for shape in shapes:
             transformer.points += shape.ppc_points
 
+        print(f"{wcx=}, {wcy=}")
+
         transformer.translation(Vector3(-wcx, -wcy))
+
+        # print(f"{transformer.points=}")
 
         x = transformer.points[3].x - transformer.points[0].x
         y = transformer.points[3].y - transformer.points[0].y
@@ -59,7 +64,9 @@ class Window:
             transformer.rotate(degree, Vector3(wcx, wcy))
 
         transformer.apply()
-        print(transformer.points)
+
+        print(f"{self.ppc_points=}")
+        # print(transformer.points)
 
     @property
     def v_up(self) -> tuple[Vector3, Vector3]:

@@ -68,7 +68,7 @@ class Viewport:
         for shape in display_file:
             shape.ppc_points = deepcopy(shape.points)
 
-        # parallel_projection(window, display_file)
+        parallel_projection(window, display_file)
         window.ppc_transformation(display_file)
 
         window_max = window.max_ppc
@@ -76,8 +76,9 @@ class Viewport:
         for shape in display_file:
             # points = shape.clipper.clip(shape.ppc_points, window_max, window_min)
             points = shape.ppc_points
-            transformed_points = self._viewport_transform(window_min, window_max, points)
-            final_points = shape.process_clipped_points(points, transformed_points, window_min, window_max)
+            # transformed_points = self._viewport_transform(window_min, window_max, points)
+            # final_points = shape.process_clipped_points(points, transformed_points, window_min, window_max)
+            final_points = self._viewport_transform(window_min, window_max, points)
 
             if not len(final_points):
                 continue

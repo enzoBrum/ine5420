@@ -57,7 +57,10 @@ class App:
         try:
             data = json.loads(data)
 
-            points = [Vector3(*coords) for coords in data["points"]]
+            if "points" in data:
+                points = [Vector3(*coords) for coords in data["points"]]
+            else:
+                lines = [(Vector3(*a[0]), Vector3(*a[1])) for a in data["lines"]]
             name = data["name"]
 
             idx = 1
@@ -97,7 +100,7 @@ class App:
                         int(data["points_per_segment"]),
                     )
                 case "wireframe3d":
-                    shape = Wireframe3D(points, False, name, color)
+                    shape = Wireframe3D(lines, name, color)
 
             print(f"Added shape: {shape}")
             self.display_file.append(shape)
@@ -140,11 +143,12 @@ class App:
 
     @redraw_viewport
     def translation(self, direction: str):
-        old_cx, old_cy, old_cz = Transformer3D.center(self.selected_shape.points)
+        transformer = self.selected_shape.transformer
+        old_cx, old_cy, old_cz = transformer.center(self.selected_shape.points)
         xvar = float(self.window_controls.xvar.get())
         yvar = float(self.window_controls.yvar.get())
-        zvar = float(self.window_controls.zvar.get())
-        using_object_center = abs(old_cx - xvar) < 1e-6 and abs(old_cy - yvar) < 1e-6 and abs(old_cz - zvar)
+        # zvar = float(self.window_controls.zvar.get())
+        using_object_center = abs(old_cx - xvar) < 1e-6 and abs(old_cy - yvar) < 1e-6 and abs(old_cz - 0) < 1e-6
 
         # TODO: lidar com o "vup"
         # TODO: suportar diferentes valores para o vetor de translação.
@@ -174,17 +178,19 @@ class App:
         # for i in range(len(self.selected_shape.points)):
         #     self.selected_shape.points[i] += Vector3.from_array(displacement_vector)
 
-        self.selected_shape.transformer.translation(Vector3(10, 10, 10), self.selected_shape.points)
+        transformer.translation(Vector3(10, 10, 10), self.selected_shape.points)
+        transformer.apply()
 
         if using_object_center:
-            new_cx, new_cy, new_cz = Transformer3D.center(self.selected_shape.points)
+            new_cx, new_cy, new_cz = transformer.center(self.selected_shape.points)
             self.window_controls.xvar.set(new_cx)
             self.window_controls.yvar.set(new_cy)
-            self.window_controls.zvar.set(new_cz)
+            # self.window_controls.zvar.set(new_cz)
 
     @redraw_viewport
     def scale(self, factor: str):
         self.selected_shape.transformer.scale(1.2 if factor == "+" else 0.8, self.selected_shape.points)
+        self.selected_shape.transformer.apply()
 
     @redraw_viewport
     def rotate(self, data: str):
@@ -213,10 +219,10 @@ class App:
         print("Color: %s" % self.selected_shape_old_color)
         self.selected_shape.color = "gold"
 
-        cx, cy, cz = Transformer3D.center(self.selected_shape.points)
+        cx, cy, cz = self.selected_shape.transformer.center(self.selected_shape.points)
         self.window_controls.xvar.set(cx)
         self.window_controls.yvar.set(cy)
-        self.window_controls.zvar.set(cz)
+        # self.window_controls.zvar.set(cz)
 
         print(f"Selected shape: {self.selected_shape}")
 
@@ -299,15 +305,19 @@ class App:
             json.dumps(
                 {
                     "type": "wireframe3d",
-                    "points": [
-                        (-30, -30, -30),
-                        (-30, -30, 30),
-                        (-30, 30, -30),
-                        (-30, 30, 30),
-                        (30, -30, -30),
-                        (30, -30, 30),
-                        (30, 30, -30),
-                        (30, 30, 30),
+                    "lines": [
+                        ((-30, -30, -30), (30, -30, -30)),
+                        ((-30, -30, -30), (-30, 30, -30)),
+                        ((30, -30, -30), (30, 30, -30)),
+                        ((-30, 30, -30), (30, 30, -30)),
+                        ((-30, -30, 30), (30, -30, 30)),
+                        ((-30, -30, 30), (-30, 30, 30)),
+                        ((30, -30, 30), (30, 30, 30)),
+                        ((-30, 30, 30), (30, 30, 30)),
+                        ((-30, -30, -30), (-30, -30, 30)),
+                        ((30, -30, -30), (30, -30, 30)),
+                        ((-30, 30, -30), (-30, 30, 30)),
+                        ((30, 30, -30), (30, 30, 30)),
                     ],
                     "name": "foo",
                     "color": self.shape_listbox.add_object.color_hex_name["blue"],
@@ -326,16 +336,16 @@ class App:
         #     )
         # )
         #
-        self.add_shape(
-            json.dumps(
-                {
-                    "type": "line",
-                    "points": [(100, 100), (500, 500)],
-                    "name": "Foo",
-                    "color": self.shape_listbox.add_object.color_hex_name["blue"],
-                }
-            )
-        )
+        # self.add_shape(
+        #     json.dumps(
+        #         {
+        #             "type": "line",
+        #             "points": [(100, 100), (500, 500)],
+        #             "name": "Foo",
+        #             "color": self.shape_listbox.add_object.color_hex_name["blue"],
+        #         }
+        #     )
+        # )
         # self.add_shape(
         #     json.dumps(
         #         {

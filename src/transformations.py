@@ -67,14 +67,15 @@ class Transformer2D(Transformer):
 
     def apply(self):
         for i, point in enumerate(self.points):
-            point = [point.x, point.y, point.z]
             arr = [round(x, 6) for x in point]
 
+            print(f"BEFORE: {self.points[i]=}")
             vec = Vector3.from_array(np.matmul(arr, self.transformation_matrix))
 
             self.points[i].x = vec.x
             self.points[i].y = vec.y
             self.points[i].z = vec.z
+            print(f"AFTER: {self.points[i]=}")
 
 
 class Transformer3D(Transformer):
@@ -179,8 +180,8 @@ class Transformer3D(Transformer):
 
     def apply(self):
         for i, p in enumerate(self.points):
-            arr = np.array([p.x, p.y, p.z, 1])
-            vec = Vector3.from_array(np.matmul(arr, self.transformation_matrix))
+            arr = [round(x, 6) for x in list(p) + [1]]
+            vec = Vector3.from_array(np.matmul(np.array(arr), self.transformation_matrix))
 
             self.points[i].x = vec.x
             self.points[i].y = vec.y
