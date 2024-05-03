@@ -299,8 +299,8 @@ class App:
 
         self.selected_shape = None
         self.window = Window(
-            Vector3(10, 10),
-            Vector3(VIEWPORT_DIMENSION[0] - 10, VIEWPORT_DIMENSION[1] - 10),
+            Vector3(10, 10, 0),
+            Vector3(VIEWPORT_DIMENSION[0] - 10, VIEWPORT_DIMENSION[1] - 10, 300),
         )
         self.frame = ttk.Frame(self.root, padding="3 3 12 12")
         self.frame.grid(column=0, row=0, sticky=(N, W, E, S))

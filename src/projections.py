@@ -11,6 +11,7 @@ from vector3 import Vector3
 if TYPE_CHECKING:
     from interface import Window
 
+PI = 1.5683580323815514
 
 def parallel_projection(window: "Window", display_file: DisplayFile):
 
@@ -26,12 +27,14 @@ def parallel_projection(window: "Window", display_file: DisplayFile):
         transformer.points += shape.ppc_points
 
     vrp = Vector3((window_max.x + window_min.x) / 2, (window_max.y + window_min.y) / 2, (window_max.z + window_min.z) / 2)
-
+    print(f"{vrp=}")
     v1 = window_max + vrp
+    print(f"{v1=}")
     v2 = window_min - vrp
+    print(f"{v2=}")
 
     vpn = Vector3.from_array(np.cross(np.array(list(v1)), np.array(list(v2))))
-    vpn.z = 2
+    vpn.z = 1
     print(f"{vpn=}")
 
     # https://www.youtube.com/watch?v=vH-DagcgJvE --> simplesmente perfeito pra achar o ângulo entre vetor e eixo <3
@@ -39,16 +42,20 @@ def parallel_projection(window: "Window", display_file: DisplayFile):
 
     x_angle = acos(vpn.x / length)
     y_angle = acos(vpn.y / length)
+    z_angle = acos(vpn.z / length)
+    print(f"{x_angle=}, {y_angle=}, {z_angle=}")
 
     transformer.translation(-vrp)
-    transformer.rotate_x_y_z(-x_angle, "X")
-    transformer.rotate_x_y_z(-y_angle, "Y")
+    z_angle = PI - z_angle
+    transformer.rotate_x_y_z(z_angle, 'X')
+    transformer.rotate_x_y_z(z_angle, 'Y')
 
     transformer.apply()
 
     window_max = window.max_ppc
     window_min = window.min_ppc
     vrp = Vector3((window_max.x + window_min.x) / 2, (window_max.y + window_min.y) / 2, (window_max.z + window_min.z) / 2)
+    print(f"{vrp=}")
 
     v1 = window_max + vrp
     v2 = window_min - vrp
