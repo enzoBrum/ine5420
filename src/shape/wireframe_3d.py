@@ -9,7 +9,7 @@ from .shape import Shape
 from .wireframe import Wireframe
 
 
-class Wireframe3D(Shape):
+class Wireframe3D(Wireframe):
     shape_name = "Object3D"
     transformer = Transformer3D
 
@@ -18,6 +18,7 @@ class Wireframe3D(Shape):
     def __init__(self, lines: list[tuple[Vector3, Vector3]], name: Optional[str] = None, color: str = "red") -> None:
         self.lines = lines
         points = [p for line in lines for p in line]
+        print(f"{points=}")
         super().__init__(points, name, color)
 
     def serialize(self, vertices: dict[Vector3, int], hex_to_color: dict[str, str]) -> str: ...

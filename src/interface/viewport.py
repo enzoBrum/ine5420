@@ -74,11 +74,11 @@ class Viewport:
         window_max = window.max_ppc
         window_min = window.min_ppc
         for shape in display_file:
-            # points = shape.clipper.clip(shape.ppc_points, window_max, window_min)
-            points = shape.ppc_points
-            # transformed_points = self._viewport_transform(window_min, window_max, points)
-            # final_points = shape.process_clipped_points(points, transformed_points, window_min, window_max)
-            final_points = self._viewport_transform(window_min, window_max, points)
+            points = shape.clipper.clip(shape.ppc_points, window_max, window_min)
+            #points = shape.ppc_points
+            transformed_points = self._viewport_transform(window_min, window_max, points)
+            final_points = shape.process_clipped_points(points, transformed_points, window_min, window_max)
+            #final_points = self._viewport_transform(window_min, window_max, points)
 
             if not len(final_points):
                 continue

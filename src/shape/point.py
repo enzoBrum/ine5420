@@ -16,7 +16,7 @@ class Point(Shape):
         return f"o {self.name}\nusemtl {hex_to_color[self.color]}\np {vertices[self.__point]}"
 
     def draw(self, canvas: Canvas, point: list[Vector3]):
-        x, y = point[0]
+        x, y, _ = point[0]
         canvas.create_oval(
             x - self.radius,
             y - self.radius,

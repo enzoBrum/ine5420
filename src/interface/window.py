@@ -7,7 +7,7 @@ import traceback
 import numpy as np
 
 from shape import Shape
-from transformations import Transformer2D
+from transformations import Transformer2D, Transformer3D
 from vector3 import Vector3
 
 
@@ -117,8 +117,13 @@ class Window:
         vup = [
             self.points[3].x - self.points[0].x,
             self.points[3].y - self.points[0].y,
-            1,
+            self.points[3].z - self.points[0].z,
+            1
         ]
+
+        transformer = Transformer3D()
+        xy_angle = np.arctan2(vup[1], vup[0])
+        vup = np.matmul(vup, transformer.rotation_matrix("Z", xy_angle))[1:]
 
         # Normalize vup to reduce the numerical error
         vup_normalized = np.array(vup) / np.linalg.norm(vup)
@@ -134,12 +139,50 @@ class Window:
         # Up and Down dont need np.cross
         elif direction == "U":
             displacement_vector = vup_normalized * step
-        else:
+        elif direction == "D":
             displacement_vector = -vup_normalized * step
+        elif direction == "F":
+            displacement_vector = [0, 0, step]
+        else:
+            displacement_vector = [0, 0, -step]
 
         print(displacement_vector)
         # Apply the displacement_vector for window points
         for i in range(len(self.points)):
             self.points[i] += Vector3.from_array(displacement_vector)
+
+        print(f"window max final: {self.max}\nwindow min final: {self.min}")
+
+    def rotate(self, degree: float, type: str):
+        print(f"Rotacionando Window {degree} graus {type}")
+
+        transformer = Transformer3D()
+        c = transformer.center(self.points)
+        transformer.points = self.points
+
+        if type == "X":
+            v = Vector3(
+                c.x,
+                self.points[3].y - self.points[0].y,
+                c.z
+            )
+        elif type == "Y":
+            v = Vector3(
+                self.points[3].x - self.points[0].x, 
+                c.y,
+                c.z
+            )
+        elif type == "Z":
+            """v1 = self.max - c
+            v2 = self.min - c
+            v = Vector3.from_array(np.cross(np.array(list(v1)), np.array(list(v2))))"""
+            v = Vector3(
+                c.x,
+                c.y,
+                c.z
+            )
+        
+        transformer.rotate(degree, v)
+        transformer.apply()
 
         print(f"window max final: {self.max}\nwindow min final: {self.min}")

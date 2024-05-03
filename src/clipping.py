@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-
+from itertools import batched
 from vector3 import Vector3
 
 
@@ -234,9 +234,10 @@ class SutherlandHodgman(Clipper):
     def clip(cls, points: list[Vector3], window_max: Vector3, window_min: Vector3) -> list[Vector3]:
         points_list = []
         extra_points = 0
-        for i in range(len(points)):
-            p = points[i]
-            q = points[(i + 1) % len(points)]
+        print(f"INPUT: {points}")
+        for p1, p2 in batched(points, 2):
+            p = p1
+            q = p2
             print(f"P: {p}, Q: {q}")
 
             p_inside = (window_min.x <= p.x <= window_max.x) and (window_min.y <= p.y <= window_max.y)
@@ -244,10 +245,12 @@ class SutherlandHodgman(Clipper):
 
             if p_inside and q_inside:
                 print("P e Q dentro")
+                points_list.append(p)
                 points_list.append(q)
             elif p_inside and not q_inside:
                 print("P dentro e Q fora")
                 intersect = LiangBarsky.clip([p, q], window_max, window_min)
+                points_list.append(p)
                 points_list.append(intersect[1])
             elif not p_inside and q_inside:
                 print("P fora e Q dentro")
@@ -263,7 +266,7 @@ class SutherlandHodgman(Clipper):
                 if len(intersect) > 0:
                     points_list.append(intersect[0])
                     points_list.append(intersect[1])
-                else:
+                """else:
                     # q não foi inserido, logo não há seguimento entre q e o póximo ponto.
                     # polygon.ppc_inexistent_lines.add(
                     #     (i % len(polygon.ppc_points), (i + 1) % len(polygon.ppc_points))
@@ -280,7 +283,7 @@ class SutherlandHodgman(Clipper):
                     if (p.x > window_max.x and q.y < window_min.y) or (q.x > window_max.x and p.y < window_min.y):
                         points_list.append(Vector3(window_max.x, window_min.y, 1))
                         extra_points += 1
-
+                    """
         if extra_points == len(points_list):
             points_list = []
         print(f"OUTPUT: {points_list}")

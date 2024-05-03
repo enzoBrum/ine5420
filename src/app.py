@@ -9,7 +9,7 @@ from descritor_obj import DescritorOBJ
 from display_file import DisplayFile
 from event import Events
 from interface import Viewport, Window
-from shape import BSpline, Curve2D, Line, Point, Shape, Wireframe, Wireframe3D
+from shape import BSpline, Curve2D, Line, Point, Shape, Wireframe, Wireframe3D, Point3D
 from transformations import Transformer3D
 from vector3 import Vector3
 from widgets import ShapeListbox, WindowControls
@@ -99,6 +99,8 @@ class App:
                         color,
                         int(data["points_per_segment"]),
                     )
+                case "point3d":
+                    shape = Point3D(points, name, color)
                 case "wireframe3d":
                     shape = Wireframe3D(lines, name, color)
 
@@ -127,15 +129,11 @@ class App:
 
     @redraw_viewport
     def rotate_window(self, e):
-        Transformer3D.rotate(
-            float(self.window_controls.window_step.get()),
-            Vector3(*Transformer3D.center(self.window.points)),
-            self.window.points,
-        )
+        self.window.rotate(float(self.window_controls.window_step.get()), 'Z')
 
     @redraw_viewport
     def move_window(self, direction: str):
-        self.window.move(direction.upper(), float(self.window_controls.window_step.get()))
+        self.window.move(direction, float(self.window_controls.window_step.get()))
 
     @redraw_viewport
     def zoom(self, factor: str):
@@ -198,7 +196,7 @@ class App:
 
     @redraw_viewport
     def scale(self, factor: str):
-        self.selected_shape.transformer.scale(1.2 if factor == "+" else 0.8, self.selected_shape.points)
+        self.selected_shape.transformer.scale(1.2 if factor == "+" else 0.8)
         self.selected_shape.transformer.apply()
 
     @redraw_viewport
@@ -299,8 +297,8 @@ class App:
 
         self.selected_shape = None
         self.window = Window(
-            Vector3(10, 10, 0),
-            Vector3(VIEWPORT_DIMENSION[0] - 10, VIEWPORT_DIMENSION[1] - 10, 300),
+            Vector3(-200, -200, 100),
+            Vector3(VIEWPORT_DIMENSION[0], VIEWPORT_DIMENSION[1], 400),
         )
         self.frame = ttk.Frame(self.root, padding="3 3 12 12")
         self.frame.grid(column=0, row=0, sticky=(N, W, E, S))
@@ -309,6 +307,17 @@ class App:
         self.__create_left_menu()
         self.__create_viewport_and_log()
         self.__bind_events()
+
+        self.add_shape(
+            json.dumps(
+                {
+                    "type": "point3d",
+                    "points": [(20, 20, 20)],
+                    "name": "foo",
+                    "color": self.shape_listbox.add_object.color_hex_name["blue"],
+                }
+            )
+        )
 
         self.add_shape(
             json.dumps(

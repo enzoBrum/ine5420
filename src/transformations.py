@@ -69,13 +69,13 @@ class Transformer2D(Transformer):
         for i, point in enumerate(self.points):
             arr = [round(x, 6) for x in point]
 
-            print(f"BEFORE: {self.points[i]=}")
+            #print(f"BEFORE: {self.points[i]=}")
             vec = Vector3.from_array(np.matmul(arr, self.transformation_matrix))
 
             self.points[i].x = vec.x
             self.points[i].y = vec.y
             self.points[i].z = vec.z
-            print(f"AFTER: {self.points[i]=}")
+            #print(f"AFTER: {self.points[i]=}")
 
 
 class Transformer3D(Transformer):
@@ -126,31 +126,24 @@ class Transformer3D(Transformer):
         Roda o mundo em torno de um eixo arbitrário.
         """
 
-        degree = radians(degree)
+        magnitude = sqrt(sum([a**2 for a in axis]))
+        cx = axis.x / magnitude
+        cy = axis.y / magnitude
+        cz = axis.z / magnitude
 
-        # passo 1
-        self.translation(-axis)
+        q0 = cos(degree / 2)
+        q1 = sin(degree / 2) * cx
+        q2 = sin(degree / 2) * cy
+        q3 = sin(degree / 2) * cz
 
-        # passo 2
-        xy_angle = np.arccos(axis.z / sqrt(axis.x**2 + axis.y**2 + axis.z**2))
-        matrix = self.rotation_matrix("X", xy_angle)
-
-        # passo 3
-        z_angle = np.arccos(axis.y / sqrt(axis.x**2 + axis.y**2 + axis.z**2))
-        matrix = np.matmul(matrix, self.rotation_matrix("Z", z_angle))
-
-        # passo 4
-        matrix = np.matmul(matrix, self.rotation_matrix("Y", degree))
-
-        # passo 5
-        matrix = np.matmul(matrix, np.linalg.inv(self.rotation_matrix("Z", -z_angle)))
-
-        # passo 6
-        matrix = np.matmul(matrix, np.linalg.inv(self.rotation_matrix("X", -xy_angle)))
-
-        # passo 7
+        matrix = [
+            [q0**2 + q1**2 - q2**2 - q3**2, 2 * (q1 * q2 - q0 * q3), 2 * (q1 * q3 + q0 * q2), 0],
+            [2 * (q1 * q2 + q0 * q3), q0**2 - q1**2 + q2**2 - q3**2, 2 * (q2 * q3 - q0 * q1), 0],
+            [2 * (q1 * q3 - q0 * q2), 2 * (q2 * q3 + q0 * q1), q0**2 - q1**2 - q2**2 + q3**2, 0],
+            [0, 0, 0, 1],
+        ]
+        print(matrix)
         self.transformation_matrix = np.matmul(self.transformation_matrix, matrix)
-        self.translation(axis, inverse=True)
 
     def rotate_x_y_z(self, rad: float, axis: Literal["X", "Y", "Z"]) -> None:
         """
@@ -186,3 +179,5 @@ class Transformer3D(Transformer):
             self.points[i].x = vec.x
             self.points[i].y = vec.y
             self.points[i].z = vec.z
+
+        self.transformation_matrix = [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]
