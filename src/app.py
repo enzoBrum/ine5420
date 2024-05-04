@@ -9,7 +9,7 @@ from descritor_obj import DescritorOBJ
 from display_file import DisplayFile
 from event import Events
 from interface import Viewport, Window
-from shape import BSpline, Curve2D, Line, Point, Shape, Wireframe, Wireframe3D, Point3D
+from shape import BSpline, Curve2D, Line, Point, Point3D, Shape, Wireframe, Wireframe3D
 from transformations import Transformer3D
 from vector3 import Vector3
 from widgets import ShapeListbox, WindowControls
@@ -129,7 +129,7 @@ class App:
 
     @redraw_viewport
     def rotate_window(self, e):
-        self.window.rotate(float(self.window_controls.window_step.get()), 'Z')
+        self.window.rotate(float(self.window_controls.window_step.get()), "Z")
 
     @redraw_viewport
     def move_window(self, direction: str):
@@ -297,8 +297,8 @@ class App:
 
         self.selected_shape = None
         self.window = Window(
-            Vector3(-200, -200, 100),
-            Vector3(VIEWPORT_DIMENSION[0], VIEWPORT_DIMENSION[1], 400),
+            Vector3(-100, -100, -150),
+            Vector3(VIEWPORT_DIMENSION[0], VIEWPORT_DIMENSION[1], 150),
         )
         self.frame = ttk.Frame(self.root, padding="3 3 12 12")
         self.frame.grid(column=0, row=0, sticky=(N, W, E, S))

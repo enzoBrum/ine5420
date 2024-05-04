@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from math import cos, radians, sin, sqrt
-from typing import Literal, Optional
+from typing import Literal, Optional, Self
 
 import numpy as np
 import numpy.typing as npt
@@ -13,13 +13,13 @@ class Transformer(ABC):
     points: list[Vector3]
 
     @abstractmethod
-    def rotate(self, degree: float, point: Vector3) -> None: ...
+    def rotate(self, degree: float, point: Vector3) -> Self: ...
 
     @abstractmethod
-    def translation(self, d: Vector3, inverse: bool = False) -> None: ...
+    def translation(self, d: Vector3, inverse: bool = False) -> Self: ...
 
     @abstractmethod
-    def scale(self, factor: float) -> None: ...
+    def scale(self, factor: float) -> Self: ...
 
     def center(self, points: list[Vector3]) -> Vector3:
         n = len(points)
@@ -40,7 +40,7 @@ class Transformer2D(Transformer):
         # matriz identidade. A x I = A
         self.transformation_matrix = [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
 
-    def rotate(self, degree: float, point: Vector3) -> None:
+    def rotate(self, degree: float, point: Vector3) -> Self:
         self.translation(-point)
 
         matrix = np.array([[cos(degree), -sin(degree), 0], [sin(degree), cos(degree), 0], [0, 0, 1]])
@@ -49,21 +49,25 @@ class Transformer2D(Transformer):
 
         self.translation(point)
 
-    def translation(self, d: Vector3, inverse: bool = False) -> None:
+        return self
+
+    def translation(self, d: Vector3, inverse: bool = False) -> Self:
         matrix = np.array([[1, 0, 0], [0, 1, 0], [d.x, d.y, 1]])
 
         if inverse:
             matrix = np.linalg.inv(matrix)
 
         self.transformation_matrix = np.matmul(self.transformation_matrix, matrix)
+        return self
 
-    def scale(self, factor: float) -> None:
+    def scale(self, factor: float) -> Self:
         c = self.center(self.points)
 
         self.translation(-c)
         matrix = np.array([[factor, 0, 0], [0, factor, 0], [0, 0, 1]])
         self.transformation_matrix = np.matmul(self.transformation_matrix, matrix)
         self.translation(c)
+        return self
 
     def apply(self):
         for i, point in enumerate(self.points):
@@ -121,7 +125,7 @@ class Transformer3D(Transformer):
         self,
         degree: float,
         axis: Vector3,
-    ) -> None:
+    ) -> Self:
         """
         Roda o mundo em torno de um eixo arbitrário.
         """
@@ -144,24 +148,27 @@ class Transformer3D(Transformer):
         ]
         print(matrix)
         self.transformation_matrix = np.matmul(self.transformation_matrix, matrix)
+        return self
 
-    def rotate_x_y_z(self, rad: float, axis: Literal["X", "Y", "Z"]) -> None:
+    def rotate_x_y_z(self, rad: float, axis: Literal["X", "Y", "Z"]) -> Self:
         """
         Roda o mundo em torno do eixo X, Y ou Z
         """
 
         matrix = self.rotation_matrix(axis, rad)
         self.transformation_matrix = np.matmul(self.transformation_matrix, matrix)
+        return self
 
-    def translation(self, d: Vector3, inverse: bool = False) -> None:
+    def translation(self, d: Vector3, inverse: bool = False) -> Self:
         matrix = np.array([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [d.x, d.y, d.z, 1]])
 
         if inverse:
             matrix = np.linalg.inv(matrix)
 
         self.transformation_matrix = np.matmul(self.transformation_matrix, matrix)
+        return self
 
-    def scale(self, factor: float) -> None:
+    def scale(self, factor: float) -> Self:
         c = self.center(self.points)
 
         self.translation(-c)
@@ -170,6 +177,7 @@ class Transformer3D(Transformer):
 
         self.transformation_matrix = np.matmul(self.transformation_matrix, matrix)
         self.translation(c)
+        return self
 
     def apply(self):
         for i, p in enumerate(self.points):

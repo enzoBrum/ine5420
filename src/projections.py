@@ -13,52 +13,58 @@ if TYPE_CHECKING:
 
 PI = 1.5683580323815514
 
+
 def parallel_projection(window: "Window", display_file: DisplayFile):
 
-    # FIXME: Isso tá errado. O vpn tem que terminar sendo (0, 0, 1) :(
+    # FIXME: Lidar com os sinais dos ângulos da forma correta.
+    # FIXME: Por enquanto, ta hard coded pra usar y negativado.
+    # FIXME: Distorção estranha no wireframe.
     window_min = window.min
     window_max = window.max
 
-    transformer = Transformer3D()
     window.ppc_points = deepcopy(window.points)
-    transformer.points = window.ppc_points[:]
+    points = window.ppc_points[:]
 
     for shape in display_file:
-        transformer.points += shape.ppc_points
+        points += shape.ppc_points
 
-    vrp = Vector3((window_max.x + window_min.x) / 2, (window_max.y + window_min.y) / 2, (window_max.z + window_min.z) / 2)
+    vrp = deepcopy(window.vrp)
+    vpn = deepcopy(window.vpn)
+
+    vpn_transformer = Transformer3D([vpn])
+    Transformer3D([vpn]).translation(-vrp).apply()
+
+    length = lambda vec: sqrt(vec.x**2 + vec.y**2 + vec.z**2)
+    x_angle = acos(sqrt(vpn.y**2 + vpn.z**2) / length(vpn))
+
+    # Zera a componente X
+    vpn_transformer.rotate_x_y_z(x_angle, "Y").apply()
+
+    y_angle = acos(sqrt(vpn.x**2 + vpn.z**2) / length(vpn))
+
+    # Zera a componente Y
+    vpn_transformer.rotate_x_y_z(-y_angle, "Z").apply()
+
     print(f"{vrp=}")
-    v1 = window_max + vrp
-    print(f"{v1=}")
-    v2 = window_min - vrp
-    print(f"{v2=}")
-
-    vpn = Vector3.from_array(np.cross(np.array(list(v1)), np.array(list(v2))))
-    vpn.z = 1
+    print(f"{window.vpn=}")
     print(f"{vpn=}")
 
-    # https://www.youtube.com/watch?v=vH-DagcgJvE --> simplesmente perfeito pra achar o ângulo entre vetor e eixo <3
-    length = sqrt(sum([x**2 for x in vpn]))
+    vpn2 = deepcopy(window.vpn)
+    points.append(vpn2)
+    points.append(vrp)
 
-    x_angle = acos(vpn.x / length)
-    y_angle = acos(vpn.y / length)
-    z_angle = acos(vpn.z / length)
-    print(f"{x_angle=}, {y_angle=}, {z_angle=}")
+    print(f"{x_angle=}")
+    print(f"{y_angle=}")
 
-    transformer.translation(-vrp)
-    z_angle = PI - z_angle
-    transformer.rotate_x_y_z(z_angle, 'X')
-    transformer.rotate_x_y_z(z_angle, 'Y')
+    # z_angle = PI - z_angle
+    # x_angle = np.pi/2 - x_angle
+    # y_angle = np.pi/2 - y_angle
 
-    transformer.apply()
+    Transformer3D(points).translation(-vrp).rotate_x_y_z(x_angle, "Y").rotate_x_y_z(-y_angle, "X").apply()
 
-    window_max = window.max_ppc
-    window_min = window.min_ppc
-    vrp = Vector3((window_max.x + window_min.x) / 2, (window_max.y + window_min.y) / 2, (window_max.z + window_min.z) / 2)
+    print(f"{vpn2=}")
     print(f"{vrp=}")
 
-    v1 = window_max + vrp
-    v2 = window_min - vrp
-
-    vpn = Vector3.from_array(np.cross(np.array(list(v1)), np.array(list(v2))))
-    print(f"{vpn=}")
+    for shape in display_file:
+        if len(shape.points) > 1:
+            print(f"WIREFRAME3D: {shape.ppc_points}")

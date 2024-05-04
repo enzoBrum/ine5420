@@ -15,6 +15,8 @@ class Window:
     points: list[Vector3]
     ppc_points: list[Vector3]
     __og_points: list[Vector3]
+    vrp: Vector3
+    vpn: Vector3
     """
     (x3, y3) ------------------------- (x2, y2)
         |                                 |
@@ -36,6 +38,12 @@ class Window:
 
         self.__og_points = deepcopy(self.points)
         self.ppc_points = deepcopy(self.points)
+        self.vrp = Transformer3D().center(self.points)
+        self.vpn = Vector3.from_array(np.cross(self.points[2] - self.vrp, self.points[1] - self.vrp))
+
+        if self.vpn.z < 0:
+            self.vpn = -self.vpn
+        self.vpn = self.vpn/np.linalg.norm(self.vpn) + self.vrp
 
     def reset(self):
         self.points = deepcopy(self.__og_points)
@@ -110,6 +118,10 @@ class Window:
         self.points[3].x += step
         self.points[3].y -= step
 
+        #cx, cy, _ = Transformer3D().center(self.points)
+        #self.vrp.x = self.vpn.x = cx
+        #self.vrp.y = self.vpn.y = cy
+
     def move(self, direction: str, step: float):
         print(f"Movendo Window para {direction}")
         print(f"window max original: {self.max}\nwindow min original: {self.min}")
@@ -151,6 +163,9 @@ class Window:
         for i in range(len(self.points)):
             self.points[i] += Vector3.from_array(displacement_vector)
 
+        self.vpn += Vector3.from_array(displacement_vector)
+        self.vrp += Vector3.from_array(displacement_vector)
+
         print(f"window max final: {self.max}\nwindow min final: {self.min}")
 
     def rotate(self, degree: float, type: str):
@@ -158,7 +173,7 @@ class Window:
 
         transformer = Transformer3D()
         c = transformer.center(self.points)
-        transformer.points = self.points
+        transformer.points = self.points + [self.vpn, self.vrp]
 
         if type == "X":
             v = Vector3(
