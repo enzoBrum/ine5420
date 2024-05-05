@@ -42,6 +42,7 @@ class Window:
         self.ppc_points = deepcopy(self.points)
         self.vrp = Transformer3D().center(self.points)
         self.vpn = Vector3.from_array(np.cross(self.points[2] - self.vrp, self.points[1] - self.vrp))
+        self.n_zoom = 0
 
         if self.vpn.z < 0:
             self.vpn = -self.vpn
@@ -122,15 +123,19 @@ class Window:
         self.points[3].x += step
         self.points[3].y -= step
 
+        self.n_zoom += step
+
     def move(self, direction: str, step: float):
         print(f"Movendo Window para {direction}")
         print(f"window max original: {self.max}\nwindow min original: {self.min}")
 
-        vup = [self.points[3].x - self.points[0].x, self.points[3].y - self.points[0].y, self.points[3].z - self.points[0].z, 1]
-
+        vup = [self.points[3].x - self.points[0].x, self.points[3].y - self.points[0].y, self.points[3].z - self.points[0].z]
+        print(f"vup: {vup}")
         transformer = Transformer3D()
-        xy_angle = np.arctan2(vup[1], vup[0])
-        vup = np.matmul(vup, transformer.rotation_matrix("Z", xy_angle))[1:]
+        #xy_angle = pi/2 - np.arctan2(vup[1], vup[0])
+        #print(f"xy_angle: {xy_angle}")
+        #vup = np.matmul(vup, transformer.rotation_matrix("Z", xy_angle))[:3]
+        print(f"vup: {vup}")
 
         # Normalize vup to reduce the numerical error
         vup_normalized = np.array(vup) / np.linalg.norm(vup)
@@ -147,13 +152,14 @@ class Window:
         elif direction == "U":
             displacement_vector = vup_normalized * step
         elif direction == "D":
+            
             displacement_vector = -vup_normalized * step
         elif direction == "F":
             displacement_vector = [0, 0, step]
         else:
             displacement_vector = [0, 0, -step]
 
-        print(displacement_vector)
+        print(f"Displacement vector: {displacement_vector}")
         # Apply the displacement_vector for window points
         for i in range(len(self.points)):
             self.points[i] += Vector3.from_array(displacement_vector)
@@ -169,6 +175,7 @@ class Window:
         transformer = Transformer3D()
         c = transformer.center(self.points)
         transformer.points = self.points[:] + [self.vpn, self.vrp]
+        transformer.translation(-c).apply()
         if type == "X":
             v = Vector3(0, self.points[3].y, 0)
         elif type == "Y":
@@ -189,6 +196,6 @@ class Window:
         #     v = Vector3(0, 0, 1)
 
         print(f"ROTAÇÃO ANTES: {self.points=}, {self.vpn=}, {self.vrp=}")
-        transformer.translation(-c).rotate(degree, v).translation(c).apply()
+        transformer.rotate(degree, v).translation(c).apply()
         print(f"ROTAÇÃO DEPOIS: {self.points=}, {self.vpn=}, {self.vrp=}")
         print(f"window max final: {self.max}\nwindow min final: {self.min}")
