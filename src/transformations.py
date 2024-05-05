@@ -173,7 +173,7 @@ class Transformer3D(Transformer):
 
         self.translation(-c)
 
-        matrix = np.array([[factor, 0, 0, 0], [0, factor, 0, 0], [0, 0, factor, 1], [0, 0, 0, 1]])
+        matrix = np.array([[factor, 0, 0, 0], [0, factor, 0, 0], [0, 0, factor, 0], [0, 0, 0, 1]])
 
         self.transformation_matrix = np.matmul(self.transformation_matrix, matrix)
         self.translation(c)

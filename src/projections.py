@@ -18,7 +18,6 @@ def parallel_projection(window: "Window", display_file: DisplayFile):
 
     # FIXME: Lidar com os sinais dos ângulos da forma correta.
     # FIXME: Por enquanto, ta hard coded pra usar y negativado.
-    # FIXME: Distorção estranha no wireframe.
     window_min = window.min
     window_max = window.max
 
@@ -35,6 +34,7 @@ def parallel_projection(window: "Window", display_file: DisplayFile):
     Transformer3D([vpn]).translation(-vrp).apply()
 
     length = lambda vec: sqrt(vec.x**2 + vec.y**2 + vec.z**2)
+    
     x_angle = acos(sqrt(vpn.y**2 + vpn.z**2) / length(vpn))
 
     # Zera a componente X

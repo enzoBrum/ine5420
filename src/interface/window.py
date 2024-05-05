@@ -31,10 +31,12 @@ class Window:
     def __init__(self, min: Vector3, max: Vector3):
         self.points = [
             min,  # (x0, y0)
-            Vector3(max.x, min.y),  # (x1, y1)
+            Vector3(max.x, min.y, max.z),  # (x1, y1)
             max,  # (x2, y2)
-            Vector3(min.x, max.y),  # (x3, y3)
+            Vector3(min.x, max.y, min.z),  # (x3, y3)
         ]
+
+        print(f"WINDOW POINTSSS: {self.points}")
 
         self.__og_points = deepcopy(self.points)
         self.ppc_points = deepcopy(self.points)
@@ -43,7 +45,7 @@ class Window:
 
         if self.vpn.z < 0:
             self.vpn = -self.vpn
-        self.vpn = self.vpn/np.linalg.norm(self.vpn) + self.vrp
+        self.vpn = self.vpn / np.linalg.norm(self.vpn) + self.vrp
 
     def reset(self):
         self.points = deepcopy(self.__og_points)
@@ -108,30 +110,23 @@ class Window:
 
         print(f"ZOOM:\n\twindow max: {self.max} --> {final_max}\n\twindow min: {self.min} --> {final_min}")
 
-        self.points[0] += step
+        self.points[0].x += step
+        self.points[0].y += step
 
         self.points[1].x -= step
         self.points[1].y += step
 
-        self.points[2] -= step
+        self.points[2].x -= step
+        self.points[2].y -= step
 
         self.points[3].x += step
         self.points[3].y -= step
-
-        #cx, cy, _ = Transformer3D().center(self.points)
-        #self.vrp.x = self.vpn.x = cx
-        #self.vrp.y = self.vpn.y = cy
 
     def move(self, direction: str, step: float):
         print(f"Movendo Window para {direction}")
         print(f"window max original: {self.max}\nwindow min original: {self.min}")
 
-        vup = [
-            self.points[3].x - self.points[0].x,
-            self.points[3].y - self.points[0].y,
-            self.points[3].z - self.points[0].z,
-            1
-        ]
+        vup = [self.points[3].x - self.points[0].x, self.points[3].y - self.points[0].y, self.points[3].z - self.points[0].z, 1]
 
         transformer = Transformer3D()
         xy_angle = np.arctan2(vup[1], vup[0])
@@ -173,31 +168,27 @@ class Window:
 
         transformer = Transformer3D()
         c = transformer.center(self.points)
-        transformer.points = self.points + [self.vpn, self.vrp]
-
+        transformer.points = self.points[:] + [self.vpn, self.vrp]
         if type == "X":
-            v = Vector3(
-                c.x,
-                self.points[3].y - self.points[0].y,
-                c.z
-            )
+            v = Vector3(0, self.points[3].y, 0)
         elif type == "Y":
-            v = Vector3(
-                self.points[3].x - self.points[0].x, 
-                c.y,
-                c.z
-            )
+            v = Vector3(self.points[3].x, (self.points[3].y + self.points[0].y) / 2, 0)
         elif type == "Z":
             """v1 = self.max - c
             v2 = self.min - c
             v = Vector3.from_array(np.cross(np.array(list(v1)), np.array(list(v2))))"""
-            v = Vector3(
-                c.x,
-                c.y,
-                c.z
-            )
-        
-        transformer.rotate(degree, v)
-        transformer.apply()
+            v = self.vpn
+        # if type == "X":
+        #     v = Vector3(0, 1, 0)
+        # elif type == "Y":
+        #     v = Vector3(1, 0, 0)
+        # elif type == "Z":
+        #     """v1 = self.max - c
+        #     v2 = self.min - c
+        #     v = Vector3.from_array(np.cross(np.array(list(v1)), np.array(list(v2))))"""
+        #     v = Vector3(0, 0, 1)
 
+        print(f"ROTAÇÃO ANTES: {self.points=}, {self.vpn=}, {self.vrp=}")
+        transformer.translation(-c).rotate(degree, v).translation(c).apply()
+        print(f"ROTAÇÃO DEPOIS: {self.points=}, {self.vpn=}, {self.vrp=}")
         print(f"window max final: {self.max}\nwindow min final: {self.min}")

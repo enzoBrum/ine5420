@@ -1,5 +1,6 @@
 from functools import wraps
 import json
+from math import radians
 from tkinter import E, N, S, Tk, W, ttk
 import traceback
 from typing import Callable
@@ -129,7 +130,7 @@ class App:
 
     @redraw_viewport
     def rotate_window(self, e):
-        self.window.rotate(float(self.window_controls.window_step.get()), "Z")
+        self.window.rotate(radians(float(self.window_controls.window_step.get())), "X")
 
     @redraw_viewport
     def move_window(self, direction: str):
@@ -203,10 +204,9 @@ class App:
     def rotate(self, data: str):
         data = json.loads(data)
         self.selected_shape.transformer.rotate(
-            data["degree"],
-            Vector3(data["x"], data["y"], data["z"]),
-            self.selected_shape.points,
-        )
+            radians(data["degree"]),
+            Vector3(100, 60, 70),
+        ).apply()
 
     @redraw_viewport
     def clear_selected_shape(self, e):
@@ -297,8 +297,8 @@ class App:
 
         self.selected_shape = None
         self.window = Window(
-            Vector3(-100, -100, -150),
-            Vector3(VIEWPORT_DIMENSION[0], VIEWPORT_DIMENSION[1], 150),
+            Vector3(-VIEWPORT_DIMENSION[0]/2, -VIEWPORT_DIMENSION[1]/2, -150),
+            Vector3(VIEWPORT_DIMENSION[0]/2, VIEWPORT_DIMENSION[1]/2, -150),
         )
         self.frame = ttk.Frame(self.root, padding="3 3 12 12")
         self.frame.grid(column=0, row=0, sticky=(N, W, E, S))
