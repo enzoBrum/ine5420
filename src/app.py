@@ -5,6 +5,8 @@ from tkinter import E, N, S, Tk, W, ttk
 import traceback
 from typing import Callable
 
+import numpy as np
+
 from clipping import CohenSutherland, LiangBarsky
 from descritor_obj import DescritorOBJ
 from display_file import DisplayFile
@@ -130,7 +132,7 @@ class App:
 
     @redraw_viewport
     def rotate_window(self, e):
-        self.window.rotate(radians(float(self.window_controls.window_step.get())), "X")
+        self.window.rotate(radians(float(self.window_controls.window_step.get())), "Y")
 
     @redraw_viewport
     def move_window(self, direction: str):
@@ -149,45 +151,36 @@ class App:
         # zvar = float(self.window_controls.zvar.get())
         using_object_center = abs(old_cx - xvar) < 1e-6 and abs(old_cy - yvar) < 1e-6
 
-        # TODO: lidar com o "vup"
-        # TODO: suportar diferentes valores para o vetor de translação.
+        vup = [self.window.points[3].x - self.window.points[0].x, self.window.points[3].y - self.window.points[0].y, self.window.points[3].z - self.window.points[0].z]
 
-        # vup = [
-        #     self.window.points[3].x - self.window.points[0].x,
-        #     self.window.points[3].y - self.window.points[0].y,
-        #     self.window.points[3].z - self.window.points[0].z,
-        # ]
+        # Normalize vup to reduce the numerical error
+        vup_normalized = np.array(vup) / np.linalg.norm(vup)
 
-        # vup_normalized = np.array(vup) / np.linalg.norm(vup)
+        step = 10
 
-        # step = 10
-        # if direction == "R":
-        #     displacement_vector = np.cross(vup_normalized, [0, 0, 1]) * step
-        # elif direction == "L":
-        #     displacement_vector = -np.cross(vup_normalized, [0, 0, 1]) * step
-        # # Up and Down dont need np.cross
-        # elif direction == "U":
-        #     displacement_vector = vup_normalized * step
-        # elif direction == "D":
-        #     displacement_vector = -vup_normalized * step
-        # elif direction == "B":
-        #     displacement_vector = np.cross(vup_normalized, [0, 1, 0]) * step
-        # else:
+        # np.cross returns a vector perpendicular to the normalized vup and [0, 0, 1]
+        # the vector [0, 0, 1] is penpendicular to axes x and y, so np.cross return
+        # a vector thats is pendicular to vup, x, y and is multiply by the scalar step
+        # to give a sensation to a unique direction
+        if direction == "R":
+            displacement_vector = np.cross(vup_normalized, [0, 0, 1]) * step
+        elif direction == "L":
+            displacement_vector = -np.cross(vup_normalized, [0, 0, 1]) * step
+        # Up and Down dont need np.cross
+        elif direction == "U":
+            displacement_vector = vup_normalized * step
+        elif direction == "D":
+            
+            displacement_vector = -vup_normalized * step
+        elif direction == "F":
+            displacement_vector = [0, 0, step]
+        else:
+            displacement_vector = [0, 0, -step]
 
-        # for i in range(len(self.selected_shape.points)):
-        #     self.selected_shape.points[i] += Vector3.from_array(displacement_vector)
-
-        match direction:
-            case "R":
-                vec = Vector3(10, 0, 0)
-            case "L":
-                vec = Vector3(-10, 0, 0)
-            case "U":
-                vec = Vector3(0, 10, 0)
-            case "D":
-                vec = Vector3(0, -10, 0)
-        transformer.translation(vec)
-        transformer.apply()
+        print(f"Displacement vector: {displacement_vector}")
+        # Apply the displacement_vector for window points
+        for i in range(len(self.selected_shape.points)):
+            self.selected_shape.points[i] += Vector3.from_array(displacement_vector)
 
         if using_object_center:
             new_cx, new_cy, new_cz = transformer.center(self.selected_shape.points)

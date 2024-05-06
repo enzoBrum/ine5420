@@ -130,12 +130,6 @@ class Window:
         print(f"window max original: {self.max}\nwindow min original: {self.min}")
 
         vup = [self.points[3].x - self.points[0].x, self.points[3].y - self.points[0].y, self.points[3].z - self.points[0].z]
-        print(f"vup: {vup}")
-        transformer = Transformer3D()
-        #xy_angle = pi/2 - np.arctan2(vup[1], vup[0])
-        #print(f"xy_angle: {xy_angle}")
-        #vup = np.matmul(vup, transformer.rotation_matrix("Z", xy_angle))[:3]
-        print(f"vup: {vup}")
 
         # Normalize vup to reduce the numerical error
         vup_normalized = np.array(vup) / np.linalg.norm(vup)
