@@ -177,23 +177,11 @@ class Window:
         transformer.points = self.points[:] + [self.vpn, self.vrp]
         transformer.translation(-c).apply()
         if type == "X":
-            v = Vector3(0, self.points[3].y, 0)
+            v = (self.points[3] + self.points[2]) / 2
         elif type == "Y":
-            v = Vector3(self.points[3].x, (self.points[3].y + self.points[0].y) / 2, 0)
+            v = (self.points[3] + self.points[0]) / 2
         elif type == "Z":
-            """v1 = self.max - c
-            v2 = self.min - c
-            v = Vector3.from_array(np.cross(np.array(list(v1)), np.array(list(v2))))"""
             v = self.vpn
-        # if type == "X":
-        #     v = Vector3(0, 1, 0)
-        # elif type == "Y":
-        #     v = Vector3(1, 0, 0)
-        # elif type == "Z":
-        #     """v1 = self.max - c
-        #     v2 = self.min - c
-        #     v = Vector3.from_array(np.cross(np.array(list(v1)), np.array(list(v2))))"""
-        #     v = Vector3(0, 0, 1)
 
         print(f"ROTAÇÃO ANTES: {self.points=}, {self.vpn=}, {self.vrp=}")
         transformer.rotate(degree, v).translation(c).apply()

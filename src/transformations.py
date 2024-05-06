@@ -179,7 +179,7 @@ class Transformer3D(Transformer):
         self.translation(c)
         return self
 
-    def apply(self):
+    def apply(self) -> None:
         for i, p in enumerate(self.points):
             arr = [round(x, 6) for x in list(p) + [1]]
             vec = Vector3.from_array(np.matmul(np.array(arr), self.transformation_matrix))
