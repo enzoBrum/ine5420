@@ -134,6 +134,8 @@ class App:
     def rotate_window(self, e):
         self.window.rotate(radians(float(self.window_controls.window_step.get())), "Y")
 
+        self.root.after(12, self.rotate_window, None)
+
     @redraw_viewport
     def move_window(self, direction: str):
         self.window.move(direction, float(self.window_controls.window_step.get()))
@@ -141,6 +143,7 @@ class App:
     @redraw_viewport
     def zoom(self, factor: str):
         self.window.zoom(1 if factor == "+" else -1, float(self.window_controls.window_step.get()))
+
 
     @redraw_viewport
     def translation(self, direction: str):
