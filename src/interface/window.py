@@ -51,33 +51,15 @@ class Window:
     def reset(self):
         self.points = deepcopy(self.__og_points)
 
-    def ppc_transformation(self, shapes: list[Shape]):
-        print(f"{self.ppc_points=}, {len(self.ppc_points)=}")
+    def ppc_transformation(self, transformer: Transformer3D):
 
-        transformer = Transformer2D()
-        wcx, wcy, _ = transformer.center(self.ppc_points)
-
-        transformer.points = self.ppc_points[:]
-        for shape in shapes:
-            transformer.points += shape.ppc_points
-
-        print(f"{wcx=}, {wcy=}")
-
-        transformer.translation(Vector3(-wcx, -wcy))
-
-        # print(f"{transformer.points=}")
-
-        x = transformer.points[3].x - transformer.points[0].x
-        y = transformer.points[3].y - transformer.points[0].y
+        # ignora translação pois as projeções já transladam o mundo pra origem.
+        x = self.ppc_points[3].x - self.ppc_points[0].x
+        y = self.ppc_points[3].y - self.ppc_points[0].y
         degree = atan2(y, x) - pi / 2
 
         if abs(degree) > 1e-6:
-            transformer.rotate(degree, Vector3(wcx, wcy))
-
-        transformer.apply()
-
-        print(f"{self.ppc_points=}")
-        # print(transformer.points)
+            transformer.rotate(degree, Vector3(0, 0, 1))
 
     @property
     def v_up(self) -> tuple[Vector3, Vector3]:
