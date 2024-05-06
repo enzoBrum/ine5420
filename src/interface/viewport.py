@@ -4,7 +4,6 @@ from tkinter import Canvas, Misc
 from interface.window import Window
 from projections import parallel_projection
 from shape import Shape
-from transformations import Transformer3D
 from vector3 import Vector3
 
 
@@ -72,20 +71,17 @@ class Viewport:
         for shape in display_file:
             shape.ppc_points = deepcopy(shape.points)
 
-        window.ppc_points = deepcopy(window.points)
-
-        transformer = Transformer3D([point for shape in display_file for point in shape.ppc_points] + window.ppc_points[:])
-        parallel_projection(window, transformer)
-        window.ppc_transformation(transformer)
-
-        transformer.apply()
+        parallel_projection(window, display_file)
+        window.ppc_transformation(display_file)
 
         window_max = window.max_ppc
         window_min = window.min_ppc
         for shape in display_file:
             points = shape.clipper.clip(shape.ppc_points, window_max, window_min)
+            #points = shape.ppc_points
             transformed_points = self._viewport_transform(window_min, window_max, points, window.n_zoom)
             final_points = shape.process_clipped_points(points, transformed_points, window_min, window_max)
+            #final_points = self._viewport_transform(window_min, window_max, points)
 
             if not len(final_points):
                 continue
