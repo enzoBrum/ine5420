@@ -17,12 +17,17 @@ class Shape(ABC):
     ppc_points: list[Vector3]
     clipper: Clipper
     transformer: Transformer
+    dirty: bool
+    id: str
 
     def __init__(self, points: list[Vector3], name: Optional[str] = None, color: str = "red") -> None:
         self.color = color
         self.name = name if name else uuid4().hex
         self.points = points
         self.ppc_points = deepcopy(points)
+        self.dirty = True
+
+        self.id = str(self)
 
         self.transformer = self.transformer(self.points)
 

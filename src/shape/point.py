@@ -22,4 +22,5 @@ class Point(Shape):
             y - self.radius,
             x + self.radius,
             y + self.radius,
+            tags=self.id
         )

@@ -1,6 +1,7 @@
 from copy import deepcopy
 from tkinter import Canvas, Misc
 
+from display_file import DisplayFile
 from interface.window import Window
 from projections import parallel_projection
 from shape import Shape
@@ -51,15 +52,13 @@ class Viewport:
 
         return converted_points
 
-    def _inside_window(self, points: list[Vector3], window_min: Vector3, window_max: Vector3) -> bool:
-        for point in points:
-            inside = window_min.x <= point.x <= window_max.x and window_min.y <= point.y
-            if not inside:
-                return False
-        return True
+    def clean(self, display_file: DisplayFile):
+        for shape in display_file:
+            if shape.dirty:
+                self.canvas.delete(shape.id)
 
-    def draw(self, window: Window, display_file: list[Shape]):
-        self.canvas.delete("all")
+    def draw(self, window: Window, display_file: DisplayFile):
+        self.clean(display_file)
         self.canvas.create_rectangle(
             10,
             10,
@@ -69,7 +68,8 @@ class Viewport:
         )
 
         for shape in display_file:
-            shape.ppc_points = deepcopy(shape.points)
+            if shape.dirty:
+                shape.ppc_points = deepcopy(shape.points)
 
         parallel_projection(window, display_file)
         window.ppc_transformation(display_file)
@@ -77,13 +77,14 @@ class Viewport:
         window_max = window.max_ppc
         window_min = window.min_ppc
         for shape in display_file:
+            if not shape.dirty:
+                continue
             points = shape.clipper.clip(shape.ppc_points, window_max, window_min)
-            #points = shape.ppc_points
             transformed_points = self._viewport_transform(window_min, window_max, points, window.n_zoom)
             final_points = shape.process_clipped_points(points, transformed_points, window_min, window_max)
-            #final_points = self._viewport_transform(window_min, window_max, points)
 
             if not len(final_points):
                 continue
 
             shape.draw(self.canvas, final_points)
+            shape.dirty = False

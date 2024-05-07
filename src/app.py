@@ -123,6 +123,8 @@ class App:
 
     @redraw_viewport
     def load_shapes(self, filename):
+        self.display_file.all_dirty()
+        self.viewport.clean(self.display_file)
         self.display_file, hex_color_names = DescritorOBJ.load(filename)
 
         names_color_hex = {name: color_hex for color_hex, name in hex_color_names.items()}
@@ -133,20 +135,22 @@ class App:
     @redraw_viewport
     def rotate_window(self, e):
         self.window.rotate(radians(float(self.window_controls.window_step.get())), "Y")
-
-        self.root.after(12, self.rotate_window, None)
+        self.display_file.all_dirty()
 
     @redraw_viewport
     def move_window(self, direction: str):
         self.window.move(direction, float(self.window_controls.window_step.get()))
+        self.display_file.all_dirty()
 
     @redraw_viewport
     def zoom(self, factor: str):
         self.window.zoom(1 if factor == "+" else -1, float(self.window_controls.window_step.get()))
+        self.display_file.all_dirty()
 
 
     @redraw_viewport
     def translation(self, direction: str):
+        self.selected_shape.dirty = True
         transformer = self.selected_shape.transformer
         old_cx, old_cy, old_cz = transformer.center(self.selected_shape.points)
         xvar = float(self.window_controls.xvar.get())
@@ -193,11 +197,13 @@ class App:
 
     @redraw_viewport
     def scale(self, factor: str):
+        self.selected_shape.dirty = True
         self.selected_shape.transformer.scale(1.2 if factor == "+" else 0.8)
         self.selected_shape.transformer.apply()
 
     @redraw_viewport
     def rotate(self, data: str):
+        self.selected_shape.dirty = True
         data = json.loads(data)
         self.selected_shape.transformer.rotate(
             radians(data["degree"]),
@@ -207,6 +213,7 @@ class App:
     @redraw_viewport
     def clear_selected_shape(self, e):
         if self.selected_shape:
+            self.selected_shape.dirty = True
             self.selected_shape.color = self.selected_shape_old_color
             self.selected_shape = None
             self.window_controls.xvar.set(0)
@@ -216,10 +223,11 @@ class App:
     def update_selected_shape(self, selected_shape_id: str):
         if self.selected_shape:
             self.selected_shape.color = self.selected_shape_old_color
+            self.selected_shape.dirty = True
 
         self.selected_shape = self.display_file.get_shape_by_id(selected_shape_id)
+        self.selected_shape.dirty = True
         self.selected_shape_old_color = self.selected_shape.color
-        print("Color: %s" % self.selected_shape_old_color)
         self.selected_shape.color = "gold"
 
         cx, cy, cz = self.selected_shape.transformer.center(self.selected_shape.points)
@@ -236,6 +244,7 @@ class App:
             Line.clipper = CohenSutherland
         else:
             Line.clipper = LiangBarsky
+        self.display_file.all_dirty()
 
     def __create_viewport_and_log(self):
         viewport_frame = ttk.Frame(self.frame, padding="12 -3 12 12")

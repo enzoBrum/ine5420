@@ -16,7 +16,8 @@ def parallel_projection(window: "Window", display_file: DisplayFile):
     points = window.ppc_points[:]
 
     for shape in display_file:
-        points += shape.ppc_points
+        if shape.dirty:
+            points += shape.ppc_points
 
     vrp = deepcopy(window.vrp)
     vpn = deepcopy(window.vpn) - vrp

@@ -50,6 +50,13 @@ class Window:
 
     def reset(self):
         self.points = deepcopy(self.__og_points)
+        self.vrp = Transformer3D().center(self.points)
+        self.vpn = Vector3.from_array(np.cross(self.points[2] - self.vrp, self.points[1] - self.vrp))
+        self.n_zoom = 0
+
+        if self.vpn.z < 0:
+            self.vpn = -self.vpn
+        self.vpn = self.vpn / np.linalg.norm(self.vpn) + self.vrp
 
     def ppc_transformation(self, shapes: list[Shape]):
         print(f"{self.ppc_points=}, {len(self.ppc_points)=}")
@@ -59,7 +66,8 @@ class Window:
 
         transformer.points = self.ppc_points[:]
         for shape in shapes:
-            transformer.points += shape.ppc_points
+            if shape.dirty:
+                transformer.points += shape.ppc_points
 
         print(f"{wcx=}, {wcy=}")
 

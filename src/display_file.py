@@ -25,6 +25,10 @@ class DisplayFile:
     def get_shape_by_id(self, shape_id: str) -> Optional[Shape]:
         return self._shapes_dict.get(shape_id)
 
+    def all_dirty(self):
+        for shape in self._shapes:
+            shape.dirty = True
+
     def __len__(self) -> int:
         return len(self._shapes)
 

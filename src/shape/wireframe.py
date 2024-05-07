@@ -44,10 +44,11 @@ class Wireframe(Shape):
             canvas.create_polygon(
                 *[(p.x, p.y) for p in points],
                 fill=self.color,
+                tags=self.id
             )
         else:
             new_points = []
             for i in range(0, len(points), 2):
                 new_points.append((points[i], points[i + 1]))
             for p1, p2 in new_points:
-                canvas.create_line(p1.x, p1.y, p2.x, p2.y, width=3, fill=self.color)
+                canvas.create_line(p1.x, p1.y, p2.x, p2.y, width=3, fill=self.color, tags=self.id)
