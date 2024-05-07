@@ -15,10 +15,10 @@ from interface import Viewport, Window
 from shape import BSpline, Curve2D, Line, Point, Point3D, Shape, Wireframe, Wireframe3D
 from transformations import Transformer3D
 from vector3 import Vector3
-from widgets import ShapeListbox, WindowControls
+from widgets import Configuration, MovementControls, ShapeListbox
 
 VIEWPORT_DIMENSION = (600, 600)
-GEOMETRY = "1000x1000"
+GEOMETRY = "1280x1080"
 PROGRAM_NAME = "sistema básico de CG 2D"
 
 """
@@ -36,7 +36,8 @@ class App:
     selected_shape: Shape | None
     selected_shape_old_color: str
     shape_listbox: ShapeListbox
-    window_controls: WindowControls
+    movement_controls: MovementControls
+    configuration: Configuration
 
     def redraw_viewport(func):
         @wraps(func)
@@ -262,10 +263,8 @@ class App:
         self.viewport.canvas.grid(column=0, row=1)
 
     def __create_left_menu(self):
-        menu_frame = ttk.Frame(self.frame, padding="12 -3 12 12", border=3, borderwidth=3, relief="groove")
-        menu_frame.grid(column=0, row=0)
-
-        ttk.Label(menu_frame, text="Menu de Funções").grid(column=0, row=0, sticky="n")
+        menu_frame = ttk.LabelFrame(self.frame, padding="12 -3 12 12", border=3, borderwidth=3, relief="groove", text="Function Menu")
+        menu_frame.grid(column=0, row=0, rowspan=12, sticky="W")
 
         self.shape_listbox = ShapeListbox(
             menu_frame,
@@ -273,11 +272,15 @@ class App:
             row=2,
         )
 
-        self.window_controls = WindowControls(
+        self.movement_controls = MovementControls(
             menu_frame,
             column=0,
-            row=4,
+            row=4
         )
+
+        ttk.Separator(menu_frame, orient="vertical").grid(row=2, column=3, rowspan=3, ipady=400, ipadx=10, padx=(30, 10))
+
+        self.configuration = Configuration(menu_frame, column=4, row=2)
 
     def __bind_events(self):
         self.bind_event(self.move_window, Events.MOVE_WINDOW, True)
@@ -307,6 +310,8 @@ class App:
         )
         self.frame = ttk.Frame(self.root, padding="3 3 12 12")
         self.frame.grid(column=0, row=0, sticky=(N, W, E, S))
+        #self.frame.rowconfigure(0, weight=1)
+        #self.frame.columnconfigure(0, weight=2)
         self.display_file = DisplayFile()
 
         self.__create_left_menu()
