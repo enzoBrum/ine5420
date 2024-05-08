@@ -35,14 +35,7 @@ class MovementControls:
             self.frame,
             text="Move Left",
             command=lambda: self.root.event_generate(Events.MOVE_WINDOW if self._moving == "WINDOW" else Events.MOVE_SHAPE, data="L"),
-        ).grid(
-            column=0,
-            row=1,
-            sticky="w",
-            padx=(0, 3), 
-            pady=(3, 40),
-            rowspan=2
-        )
+        ).grid(column=0, row=1, sticky="w", padx=(0, 3), pady=(3, 40), rowspan=2)
         ttk.Button(
             self.frame,
             text="Move Right",
@@ -53,7 +46,6 @@ class MovementControls:
             text="Move Down",
             command=lambda: self.root.event_generate(Events.MOVE_WINDOW if self._moving == "WINDOW" else Events.MOVE_SHAPE, data="D"),
         ).grid(column=1, row=1, padx=3, pady=(3, 40), rowspan=2)
-
 
         self._text_button_increase = StringVar(value="Zoom In")
         self._text_button_decrease = StringVar(value="Zoom Out")
@@ -73,19 +65,14 @@ class MovementControls:
             command=lambda: self.root.event_generate(Events.ROTATE_WINDOW if self._moving == "WINDOW" else Events.ROTATE_SHAPE),
         ).grid(column=2, row=3)
 
-    @property
-    def moving(self) -> str:
-        return self._moving
-
-    @moving.setter
-    def moving(self, new_value: str) -> str:
+    def set_moving(self, new_value: str) -> str:
+        print(f"AAAA: {new_value}")
         self._moving = new_value
 
         match self._moving:
             case "SHAPE":
-                self._text_button_decrease.set("Decrease Size")
-                self._text_button_increase.set("Increase Size")
+                self._text_button_decrease.set("Dec. Size")
+                self._text_button_increase.set("Inc. Size")
             case "WINDOW":
                 self._text_button_decrease.set("Zoom Out")
                 self._text_button_increase.set("Zoom In")
-

@@ -7,6 +7,7 @@ from pathlib import Path
 from display_file import DisplayFile
 from shape import Line, Point, Wireframe
 from shape import Shape
+from shape.wireframe_3d import Wireframe3D
 from vector3 import Vector3
 
 
@@ -127,7 +128,7 @@ class DescritorOBJ:
             case 2:
                 return i, Line(points, name, color)
             case _:
-                return i, Wireframe(points, False, name, color)
+                return i, Wireframe3D([(points[i], points[i + 1]) for i in range(0, len(points), 2)], name, color)
 
     @classmethod
     def load(cls, obj_path: str) -> tuple[DisplayFile, dict[str, str]]:
@@ -215,7 +216,7 @@ class DescritorOBJ:
                         file.write(f"p {indices}\n")
                     case "Line":
                         file.write(f"l {indices}\n")
-                    case "Wireframe":
+                    case "Object3D":
                         file.write(f"f {indices}\n")
 
                 file.write("\n")

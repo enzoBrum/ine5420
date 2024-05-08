@@ -26,35 +26,34 @@ class AddObject:
         self.frame = None
         self.root = root
 
-    def add_point(self, x, y, name, color):
+    def add_point(self, x, y, z, name, color):
         self.root.event_generate(
             Events.ADD_SHAPE,
-            data=json.dumps({"type": "point", "points": [(x, y)], "name": name, "color": color}),
+            data=json.dumps({"type": "point", "points": [(x, y, z)], "name": name, "color": color}),
         )
 
-    def add_line(self, x1, y1, x2, y2, name, color):
+    def add_line(self, x1, y1, z1, x2, y2, z2, name, color):
         self.root.event_generate(
             Events.ADD_SHAPE,
             data=json.dumps(
                 {
                     "type": "line",
-                    "points": [(x1, y1), (x2, y2)],
+                    "points": [(x1, y1, z1), (x2, y2, z2)],
                     "name": name,
                     "color": color,
                 }
             ),
         )
 
-    def add_wireframe(self, points, name, color, fill_polygon):
+    def add_wireframe(self, points, name, color):
         self.root.event_generate(
             Events.ADD_SHAPE,
             data=json.dumps(
                 {
                     "type": "wireframe",
-                    "points": list(points),
+                    "lines": list(points),
                     "name": name,
                     "color": color,
-                    "fill": fill_polygon,
                 }
             ),
         )
@@ -104,7 +103,7 @@ class AddObject:
 
         ttk.Label(self.frame, text="Shape:").grid(row=2, column=0, padx=10, pady=5)
         type_var = StringVar(self.frame)
-        options = ["Select a shape", "Point", "Line", "Wireframe", "Curve2D", "BSpline"]
+        options = ["Select a shape", "Point3D", "Line", "Object3D", "Curve2D", "BSpline2D"]
         ttk.OptionMenu(
             self.frame,
             type_var,
@@ -120,7 +119,7 @@ class AddObject:
 
     def __add_selected_object(self, type_obj: str, name: str, color: str, shape_frame: ttk.Frame):
         row = 4 if type_obj == "Line" else 2
-        column = 0 if type_obj in ("Wireframe", "Curve2D") else 1
+        column = 0 if type_obj in ("Object3D", "Curve2D") else 1
         if name == "":
             ttk.Label(shape_frame, text="Digit a name.").grid(row=row, column=column)
             return
@@ -138,19 +137,22 @@ class AddObject:
             self.color_hex_name[color] = color
 
         try:
-            if type_obj == "Point":
+            if type_obj == "Point3D":
                 x = float(shape_frame.winfo_children()[1].get())
                 y = float(shape_frame.winfo_children()[3].get())
-                self.add_point(x, y, name, color)
+                z = float(shape_frame.winfo_children()[5].get())
+                self.add_point(x, y, z, name, color)
             elif type_obj == "Line":
                 x1 = float(shape_frame.winfo_children()[1].get())
                 y1 = float(shape_frame.winfo_children()[3].get())
-                x2 = float(shape_frame.winfo_children()[5].get())
-                y2 = float(shape_frame.winfo_children()[7].get())
-                self.add_line(x1, y1, x2, y2, name, color)
-            elif type_obj == "Wireframe":
+                z1 = float(shape_frame.winfo_children()[5].get())
+                x2 = float(shape_frame.winfo_children()[7].get())
+                y2 = float(shape_frame.winfo_children()[9].get())
+                z2 = float(shape_frame.winfo_children()[11].get())
+                self.add_line(x1, y1, z1, x2, y2, z2, name, color)
+            elif type_obj == "Object3D":
                 points = str(shape_frame.winfo_children()[1].get())
-                self.add_wireframe(eval(f"[{points}]"), name, color, self.fill_polygon.get())
+                self.add_wireframe(eval(f"[{points}]"), name, color)
             elif type_obj == "Curve2D":
                 points_frame: ttk.Frame = shape_frame.winfo_children()[0]
                 num_points_frame: ttk.Frame = shape_frame.winfo_children()[1]
@@ -159,7 +161,7 @@ class AddObject:
                 points = eval(f"[{points_frame.winfo_children()[2].get()}]")
 
                 self.add_curve2d(points, name, color, num_points)
-            elif type_obj == "BSpline":
+            elif type_obj == "BSpline2D":
                 points = eval(f"[{shape_frame.winfo_children()[1].get()}]")
                 points_per_segment = int(shape_frame.winfo_children()[3].get())
 
@@ -169,7 +171,9 @@ class AddObject:
 
             print_exc()
             error_message = (
-                "X's and Y's must be a number." if type_obj in ["Line", "Point"] else "Format is incorrect or X's and Y's are not a number."
+                "X's and Y's and Z's must be a number."
+                if type_obj in ["Line", "Point3D"]
+                else "Format is incorrect or X's and Y's and Z's are not a number."
             )
             ttk.Label(shape_frame, text=error_message).grid(row=row, column=column)
 
@@ -179,7 +183,7 @@ class AddObject:
         for widget in shape_frame.winfo_children():
             widget.destroy()
 
-        if type_obj == "Point":
+        if type_obj == "Point3D":
             ttk.Label(shape_frame, text="X:").grid(row=0, column=0, padx=5, pady=5)
             entry_x = ttk.Entry(shape_frame)
             entry_x.grid(row=0, column=1, padx=5, pady=5)
@@ -187,6 +191,9 @@ class AddObject:
             ttk.Label(shape_frame, text="Y:").grid(row=1, column=0, padx=5, pady=5)
             entry_y = ttk.Entry(shape_frame)
             entry_y.grid(row=1, column=1, padx=5, pady=5)
+            ttk.Label(shape_frame, text="Z:").grid(row=2, column=0, padx=5, pady=5)
+            entry_z = ttk.Entry(shape_frame)
+            entry_z.grid(row=2, column=1, padx=5, pady=5)
         elif type_obj == "Line":
             ttk.Label(shape_frame, text="X1:").grid(row=0, column=0, padx=5, pady=5)
             entry_x1 = ttk.Entry(shape_frame)
@@ -196,29 +203,28 @@ class AddObject:
             entry_y1 = ttk.Entry(shape_frame)
             entry_y1.grid(row=1, column=1, padx=5, pady=5)
 
-            ttk.Label(shape_frame, text="X2:").grid(row=2, column=0, padx=5, pady=5)
-            entry_x2 = ttk.Entry(shape_frame)
-            entry_x2.grid(row=2, column=1, padx=5, pady=5)
+            ttk.Label(shape_frame, text="Z1:").grid(row=2, column=0, padx=5, pady=5)
+            entry_z1 = ttk.Entry(shape_frame)
+            entry_z1.grid(row=2, column=1, padx=5, pady=5)
 
-            ttk.Label(shape_frame, text="Y2:").grid(row=3, column=0, padx=5, pady=5)
+            ttk.Label(shape_frame, text="X2:").grid(row=3, column=0, padx=5, pady=5)
+            entry_x2 = ttk.Entry(shape_frame)
+            entry_x2.grid(row=3, column=1, padx=5, pady=5)
+
+            ttk.Label(shape_frame, text="Y2:").grid(row=4, column=0, padx=5, pady=5)
             entry_y2 = ttk.Entry(shape_frame)
-            entry_y2.grid(row=3, column=1, padx=5, pady=5)
-        elif type_obj == "Wireframe":
+            entry_y2.grid(row=4, column=1, padx=5, pady=5)
+
+            ttk.Label(shape_frame, text="Z2:").grid(row=5, column=0, padx=5, pady=5)
+            entry_z2 = ttk.Entry(shape_frame)
+            entry_z2.grid(row=5, column=1, padx=5, pady=5)
+        elif type_obj == "Object3D":
             ttk.Label(
                 shape_frame,
-                text="Give the points in exactly format: (x1, y1), (x2, y2), (x3,y3) ...",
+                text="Give the lines in exactly this format: ((x1, y1, z1), (x2, y2, z2)), ((x3,y3, z3), (x4, y4, z4)), ...",
             ).grid(row=0, column=0, padx=5, pady=5)
             entry_points = ttk.Entry(shape_frame)
             entry_points.grid(row=1, column=0, padx=5, pady=5)
-
-            self.fill_polygon = StringVar()
-            ttk.Checkbutton(
-                shape_frame,
-                text="Fill Wireframe",
-                onvalue="True",
-                offvalue="False",
-                variable=self.fill_polygon,
-            ).grid(row=2, column=0)
         elif type_obj == "Curve2D":
 
             points_frame = ttk.Frame(shape_frame, padding="5 5 5 5")
@@ -233,9 +239,9 @@ class AddObject:
                     " ...\nThe first set of 4 points defines a bezier curve, where (x1, y1) and (x4, y4) are the curve's begin/end and (x2,"
                     " y2), (x3, y3) are it's Control points\nThe following sets of 3 points defines a bezier curve where the start is the"
                     " end of the previous curve and the third point is it's end.\nThe first and second points are it's Control points.\nFor"
-                    " example: (x1, y1), (x2, y2), (x3, y3), (x4, y4), (x5, y5), (x6, y6), (x7, y7) describes two continuous curves.\nCurve"
-                    " 1: begins at (x1, y1), ends at (x4, y4). Control points are (x2, y2) and (x3, y3)\nCurve 2: begins at (x4, y4), ends"
-                    " at (x7, y7). Control points are (x5, y5) and (x6, y6)."
+                    " example: (x1, y1), (x2, y2), (x3, y3), (x4, y4), (x5, y5), (x6, y6), (x7, y7) describes two continuous"
+                    " curves.\nCurve2D 1: begins at (x1, y1), ends at (x4, y4). Control points are (x2, y2) and (x3, y3)\nCurve 2: begins"
+                    " at (x4, y4), ends at (x7, y7). Control points are (x5, y5) and (x6, y6)."
                 ),
             ).grid(row=0, column=0, padx=10, pady=30, sticky="NW", rowspan=7, columnspan=7)
 
@@ -246,7 +252,7 @@ class AddObject:
             ttk.Label(num_points_frame, text="Number of points: ").grid(row=6, column=0, sticky="WS")
             num_points = ttk.Entry(num_points_frame)
             num_points.grid(row=6, column=7, sticky="ES")
-        elif type_obj == "BSpline":
+        elif type_obj == "BSpline2D":
             ttk.Label(
                 shape_frame,
                 text="Give the points in exactly format: (x1, y1), (x2, y2), (x3,y3) ...",

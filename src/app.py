@@ -17,14 +17,9 @@ from transformations import Transformer3D
 from vector3 import Vector3
 from widgets import Configuration, MovementControls, ShapeListbox
 
-VIEWPORT_DIMENSION = (600, 600)
+VIEWPORT_DIMENSION = (800, 800)
 GEOMETRY = "1280x1080"
-PROGRAM_NAME = "sistema básico de CG 2D"
-
-"""
-TODO:
-    - window: move frente e tras, rotação sobre cada eixo
-"""
+PROGRAM_NAME = "sistema básico de CG 3D"
 
 
 class App:
@@ -79,16 +74,11 @@ class App:
             shape = None
             match data["type"]:
                 case "point":
-                    shape = Point(points, name, color)
+                    shape = Point3D(points, name, color)
                 case "line":
                     shape = Line(points, name, color)
                 case "wireframe":
-                    shape = Wireframe(
-                        points,
-                        data["fill"].lower() == "true",
-                        name,
-                        color,
-                    )
+                    shape = Wireframe3D(lines, name, color)
                 case "curve2d":
                     shape = Curve2D(
                         points,
@@ -103,12 +93,9 @@ class App:
                         color,
                         int(data["points_per_segment"]),
                     )
-                case "point3d":
-                    shape = Point3D(points, name, color)
-                case "wireframe3d":
-                    shape = Wireframe3D(lines, name, color)
 
             print(f"Added shape: {shape}")
+            print(f"NAME: {shape.name}")
             self.display_file.append(shape)
             self.shape_listbox.shapes_str_var.set(self.display_file._shapes)
         except:
@@ -135,36 +122,50 @@ class App:
 
     @redraw_viewport
     def rotate_window(self, e):
-        self.window.rotate(radians(float(self.window_controls.window_step.get())), "Y")
+        match self.configuration.window_rotation.get():
+            case "horizontal":
+                axis = "X"
+            case "vertical":
+                axis = "Y"
+            case "vpn":
+                axis = "Z"
+            case "axis":
+                axis = None
+            case _:
+                raise ValueError(f"Invalid window rotation. rotation: {self.configuration.window_rotation.get()}")
+
+        if axis is not None:
+            self.window.rotate(self.configuration.rotation_rad, axis)
+        else:
+            Transformer3D(self.window.points[:] + [self.window.vpn, self.window.vrp]).rotate(
+                self.configuration.rotation_rad, self.configuration.rotation_axis
+            ).apply()
         self.display_file.all_dirty()
 
     @redraw_viewport
     def move_window(self, direction: str):
-        self.window.move(direction, float(self.window_controls.window_step.get()))
+        self.window.move(direction, self.configuration.move_step)
         self.display_file.all_dirty()
 
     @redraw_viewport
     def zoom(self, factor: str):
-        self.window.zoom(1 if factor == "+" else -1, float(self.window_controls.window_step.get()))
+        self.window.zoom(1 if factor == "+" else -1, self.configuration.zoom_step)
         self.display_file.all_dirty()
-
 
     @redraw_viewport
     def translation(self, direction: str):
         self.selected_shape.dirty = True
-        transformer = self.selected_shape.transformer
-        old_cx, old_cy, old_cz = transformer.center(self.selected_shape.points)
-        xvar = float(self.window_controls.xvar.get())
-        yvar = float(self.window_controls.yvar.get())
-        # zvar = float(self.window_controls.zvar.get())
-        using_object_center = abs(old_cx - xvar) < 1e-6 and abs(old_cy - yvar) < 1e-6
 
-        vup = [self.window.points[3].x - self.window.points[0].x, self.window.points[3].y - self.window.points[0].y, self.window.points[3].z - self.window.points[0].z]
+        vup = [
+            self.window.points[3].x - self.window.points[0].x,
+            self.window.points[3].y - self.window.points[0].y,
+            self.window.points[3].z - self.window.points[0].z,
+        ]
 
         # Normalize vup to reduce the numerical error
         vup_normalized = np.array(vup) / np.linalg.norm(vup)
 
-        step = 10
+        step = self.configuration.move_step
 
         # np.cross returns a vector perpendicular to the normalized vup and [0, 0, 1]
         # the vector [0, 0, 1] is penpendicular to axes x and y, so np.cross return
@@ -178,7 +179,7 @@ class App:
         elif direction == "U":
             displacement_vector = vup_normalized * step
         elif direction == "D":
-            
+
             displacement_vector = -vup_normalized * step
         elif direction == "F":
             displacement_vector = [0, 0, step]
@@ -190,26 +191,19 @@ class App:
         for i in range(len(self.selected_shape.points)):
             self.selected_shape.points[i] += Vector3.from_array(displacement_vector)
 
-        if using_object_center:
-            new_cx, new_cy, new_cz = transformer.center(self.selected_shape.points)
-            self.window_controls.xvar.set(new_cx)
-            self.window_controls.yvar.set(new_cy)
-            # self.window_controls.zvar.set(new_cz)
-
     @redraw_viewport
     def scale(self, factor: str):
         self.selected_shape.dirty = True
-        self.selected_shape.transformer.scale(1.2 if factor == "+" else 0.8)
-        self.selected_shape.transformer.apply()
+
+        step = self.configuration.scale_step if factor == "+" else 1 / self.configuration.scale_step
+
+        self.selected_shape.transformer.scale(step).apply()
 
     @redraw_viewport
-    def rotate(self, data: str):
+    def rotate(self, e):
         self.selected_shape.dirty = True
-        data = json.loads(data)
-        self.selected_shape.transformer.rotate(
-            radians(data["degree"]),
-            Vector3(100, 60, 70),
-        ).apply()
+
+        self.selected_shape.transformer.rotate(self.configuration.rotation_rad, self.configuration.rotation_axis).apply()
 
     @redraw_viewport
     def clear_selected_shape(self, e):
@@ -217,8 +211,6 @@ class App:
             self.selected_shape.dirty = True
             self.selected_shape.color = self.selected_shape_old_color
             self.selected_shape = None
-            self.window_controls.xvar.set(0)
-            self.window_controls.yvar.set(0)
 
     @redraw_viewport
     def update_selected_shape(self, selected_shape_id: str):
@@ -231,12 +223,10 @@ class App:
         self.selected_shape_old_color = self.selected_shape.color
         self.selected_shape.color = "gold"
 
-        cx, cy, cz = self.selected_shape.transformer.center(self.selected_shape.points)
-        self.window_controls.xvar.set(cx)
-        self.window_controls.yvar.set(cy)
-        # self.window_controls.zvar.set(cz)
-
         print(f"Selected shape: {self.selected_shape}")
+
+        self.configuration.move_window_or_shape.set("SHAPE")
+        self.movement_controls.set_moving("SHAPE")
 
     @redraw_viewport
     def change_line_clipping(self, alg: str):
@@ -272,17 +262,14 @@ class App:
             row=2,
         )
 
-        self.movement_controls = MovementControls(
-            menu_frame,
-            column=0,
-            row=4
-        )
+        self.movement_controls = MovementControls(menu_frame, column=0, row=4)
 
         ttk.Separator(menu_frame, orient="vertical").grid(row=2, column=3, rowspan=3, ipady=400, ipadx=10, padx=(30, 10))
 
         self.configuration = Configuration(menu_frame, column=4, row=2)
 
     def __bind_events(self):
+        self.bind_event(lambda move: self.movement_controls.set_moving(move), Events.CHANGE_MOVE)
         self.bind_event(self.move_window, Events.MOVE_WINDOW, True)
         self.bind_event(self.zoom, Events.ZOOM, True)
         self.bind_event(self.rotate_window, Events.ROTATE_WINDOW, False)
@@ -310,121 +297,13 @@ class App:
         )
         self.frame = ttk.Frame(self.root, padding="3 3 12 12")
         self.frame.grid(column=0, row=0, sticky=(N, W, E, S))
-        #self.frame.rowconfigure(0, weight=1)
-        #self.frame.columnconfigure(0, weight=2)
+        # self.frame.rowconfigure(0, weight=1)
+        # self.frame.columnconfigure(0, weight=2)
         self.display_file = DisplayFile()
 
         self.__create_left_menu()
         self.__create_viewport_and_log()
         self.__bind_events()
-
-        self.add_shape(
-            json.dumps(
-                {
-                    "type": "point3d",
-                    "points": [(20, 20, 20)],
-                    "name": "foo",
-                    "color": self.shape_listbox.add_object.color_hex_name["blue"],
-                }
-            )
-        )
-
-        self.add_shape(
-            json.dumps(
-                {
-                    "type": "wireframe3d",
-                    "lines": [
-                        ((-30, -30, -30), (30, -30, -30)),
-                        ((-30, -30, -30), (-30, 30, -30)),
-                        ((30, -30, -30), (30, 30, -30)),
-                        ((-30, 30, -30), (30, 30, -30)),
-                        ((-30, -30, 30), (30, -30, 30)),
-                        ((-30, -30, 30), (-30, 30, 30)),
-                        ((30, -30, 30), (30, 30, 30)),
-                        ((-30, 30, 30), (30, 30, 30)),
-                        ((-30, -30, -30), (-30, -30, 30)),
-                        ((30, -30, -30), (30, -30, 30)),
-                        ((-30, 30, -30), (-30, 30, 30)),
-                        ((30, 30, -30), (30, 30, 30)),
-                    ],
-                    "name": "foo",
-                    "color": self.shape_listbox.add_object.color_hex_name["blue"],
-                }
-            )
-        )
-
-        # self.add_shape(
-        #     json.dumps(
-        #         {
-        #             "type": "point",
-        #             "points": [(50, 10)],
-        #             "name": "aaa",
-        #             "color": self.shape_listbox.add_object.color_hex_name["blue"],
-        #         }
-        #     )
-        # )
-        #
-        # self.add_shape(
-        #     json.dumps(
-        #         {
-        #             "type": "line",
-        #             "points": [(100, 100), (500, 500)],
-        #             "name": "Foo",
-        #             "color": self.shape_listbox.add_object.color_hex_name["blue"],
-        #         }
-        #     )
-        # )
-        # self.add_shape(
-        #     json.dumps(
-        #         {
-        #             "type": "wireframe",
-        #             "points": [(0, 500), (100, 600), (150, 500)],
-        #             "name": "Bar-1",
-        #             "color": self.shape_listbox.add_object.color_hex_name["red"],
-        #             "fill": "false",
-        #         }
-        #     )
-        # )
-        #
-        # self.add_shape(
-        #     json.dumps(
-        #         {
-        #             "type": "curve2d",
-        #             "points": [
-        #                 (50, 10),
-        #                 (50, 120),
-        #                 (300, 120),
-        #                 (300, 10),
-        #                 (300, -120),
-        #                 (430, 70),
-        #                 (470, 10),
-        #             ],
-        #             "name": "Baz",
-        #             "color": self.shape_listbox.add_object.color_hex_name["green"],
-        #             "points_per_segment": 1000,
-        #         }
-        #     )
-        # )
-        #
-        # self.add_shape(
-        #     json.dumps(
-        #         {
-        #             "type": "bspline",
-        #             "points": [
-        #                 (50, 10),
-        #                 (50, 120),
-        #                 (300, 120),
-        #                 (300, 10),
-        #                 (300, -120),
-        #                 (430, 70),
-        #                 (470, 10),
-        #             ],
-        #             "name": "Qux",
-        #             "color": self.shape_listbox.add_object.color_hex_name["red"],
-        #             "points_per_segment": 1000,
-        #         }
-        #     )
-        # )
 
     def run(self):
         self.root.mainloop()

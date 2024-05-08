@@ -5,7 +5,7 @@ from typing import Optional
 from uuid import uuid4
 
 from clipping import Clipper
-from transformations import Transformer
+from transformations import Transformer, Transformer3D
 from vector3 import Vector3
 
 
@@ -29,7 +29,7 @@ class Shape(ABC):
 
         self.id = str(self)
 
-        self.transformer = self.transformer(self.points)
+        self.transformer = Transformer3D(self.points)
 
     def __str__(self) -> str:
         return f"{self.shape_name}[{self.name}]"
