@@ -25,7 +25,7 @@ class ShapeListbox:
         self.add_object = AddObject(self.root)
         self.shapes_str_var = StringVar()
 
-        ttk.Label(root, text="Objetos").grid(column=0, row=1, sticky="w")
+        ttk.Label(root, text="Objetos").grid(column=column, row=row, sticky="w")
         self.listbox = Listbox(
             root,
             height=12,
@@ -35,14 +35,14 @@ class ShapeListbox:
             highlightbackground="black",
             highlightthickness=1,
         )
-        self.listbox.grid(column=column, row=row, sticky=(N, S, E, W))
+        self.listbox.grid(column=column, row=row + 1, sticky=(N, S, E, W))
         scrollbar = ttk.Scrollbar(root, orient="vertical", command=self.listbox.yview)
-        scrollbar.grid(column=column + 1, row=row, sticky=(N, S, W))
+        scrollbar.grid(column=column + 1, row=row + 1, sticky=(N, S, W))
         self.listbox.configure(yscrollcommand=scrollbar.set)
         self.listbox.bind("<<ListboxSelect>>", self.__update_selected_shape)
 
         button_frame = ttk.Frame(root)
-        button_frame.grid(column=0, row=3)
+        button_frame.grid(column=0, row=row + 2)
         ttk.Button(
             button_frame,
             text="Add Object",
@@ -53,12 +53,8 @@ class ShapeListbox:
             text="Clear Selection",
             command=lambda: self.__update_selected_shape(None, clear_selection=True),
         ).grid(column=1, row=0, sticky="w")
-        ttk.Button(button_frame, text="Save", command=self.save_shapes).grid(
-            column=0, row=1
-        )
-        ttk.Button(button_frame, text="Load", command=self.load_shapes).grid(
-            column=1, row=1, sticky="w"
-        )
+        ttk.Button(button_frame, text="Save", command=self.save_shapes).grid(column=0, row=1)
+        ttk.Button(button_frame, text="Load", command=self.load_shapes).grid(column=1, row=1, sticky="w")
 
     def __update_selected_shape(self, event: Event, clear_selection: bool = False):
         if clear_selection:
@@ -67,14 +63,10 @@ class ShapeListbox:
 
         index = event.widget.curselection()
         if index:
-            self.root.event_generate(
-                Events.SELECT_SHAPE, data=event.widget.get(index[0])
-            )
+            self.root.event_generate(Events.SELECT_SHAPE, data=event.widget.get(index[0]))
 
     def save_shapes(self):
-        filename = filedialog.asksaveasfilename(
-            filetypes=[("Wavefront Object", "*.obj")]
-        )
+        filename = filedialog.asksaveasfilename(filetypes=[("Wavefront Object", "*.obj")])
         if filename:
             self.root.event_generate(Events.SAVE_SHAPES, data=filename)
 

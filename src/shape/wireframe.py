@@ -22,14 +22,8 @@ class Wireframe(Shape):
         self.fill = fill
         super().__init__(points, name, color)
 
-    def serialize(
-        self, vertices: dict[Vector3, int], hex_to_color: dict[str, str]
-    ) -> str:
-        return (
-            f"o {self.name}\n"
-            f"usemtl {hex_to_color[self.color]}\n"
-            f"f {' '.join([vertices[p] for p in self.points])}"
-        )
+    def serialize(self, vertices: dict[Vector3, int], hex_to_color: dict[str, str]) -> str:
+        return f"o {self.name}\nusemtl {hex_to_color[self.color]}\nf {' '.join([vertices[p] for p in self.points])}"
 
     def process_clipped_points(
         self,
@@ -43,19 +37,18 @@ class Wireframe(Shape):
 
         points.append(points[0])
         transformed_points.append(transformed_points[0])
-        return ignore_lines_in_window_border(
-            points, transformed_points, window_min, window_max
-        )
+        return ignore_lines_in_window_border(points, transformed_points, window_min, window_max)
 
     def draw(self, canvas: Canvas, points: list[Vector3]):
         if self.fill:
             canvas.create_polygon(
                 *[(p.x, p.y) for p in points],
                 fill=self.color,
+                tags=self.id
             )
         else:
             new_points = []
             for i in range(0, len(points), 2):
                 new_points.append((points[i], points[i + 1]))
             for p1, p2 in new_points:
-                canvas.create_line(p1.x, p1.y, p2.x, p2.y, width=3, fill=self.color)
+                canvas.create_line(p1.x, p1.y, p2.x, p2.y, width=3, fill=self.color, tags=self.id)

@@ -1,13 +1,13 @@
 from copy import deepcopy
 from hmac import new
-from math import atan2, degrees
+from math import atan2, degrees, pi
 from tkinter import StringVar
 import traceback
 
 import numpy as np
 
 from shape import Shape
-from transformations import center, rotate, translation
+from transformations import Transformer2D, Transformer3D
 from vector3 import Vector3
 
 
@@ -15,6 +15,8 @@ class Window:
     points: list[Vector3]
     ppc_points: list[Vector3]
     __og_points: list[Vector3]
+    vrp: Vector3
+    vpn: Vector3
     """
     (x3, y3) ------------------------- (x2, y2)
         |                                 |
@@ -29,45 +31,52 @@ class Window:
     def __init__(self, min: Vector3, max: Vector3):
         self.points = [
             min,  # (x0, y0)
-            Vector3(max.x, min.y),  # (x1, y1)
+            Vector3(max.x, min.y, max.z),  # (x1, y1)
             max,  # (x2, y2)
-            Vector3(min.x, max.y),  # (x3, y3)
+            Vector3(min.x, max.y, min.z),  # (x3, y3)
         ]
+
+        print(f"WINDOW POINTS: {self.points}")
 
         self.__og_points = deepcopy(self.points)
         self.ppc_points = deepcopy(self.points)
+        self.vrp = Transformer3D().center(self.points)
+        self.vpn = Vector3.from_array(np.cross(self.points[2] - self.vrp, self.points[1] - self.vrp))
+        self.n_zoom = 0
+
+        if self.vpn.z < 0:
+            self.vpn = -self.vpn
+        self.vpn = self.vpn / np.linalg.norm(self.vpn) + self.vrp
 
     def reset(self):
         self.points = deepcopy(self.__og_points)
+        self.vrp = Transformer3D().center(self.points)
+        self.vpn = Vector3.from_array(np.cross(self.points[2] - self.vrp, self.points[1] - self.vrp))
+        self.n_zoom = 0
+
+        if self.vpn.z < 0:
+            self.vpn = -self.vpn
+        self.vpn = self.vpn / np.linalg.norm(self.vpn) + self.vrp
 
     def ppc_transformation(self, shapes: list[Shape]):
-        wcx, wcy = center(self.points)
+        transformer = Transformer2D()
+        wcx, wcy, _ = transformer.center(self.ppc_points)
 
-        points = deepcopy(self.points)
+        transformer.points = self.ppc_points[:]
         for shape in shapes:
-            points += deepcopy(shape.points)
+            if shape.dirty:
+                transformer.points += shape.ppc_points
 
-        translation(-wcx, -wcy, points)
+        transformer.translation(Vector3(-wcx, -wcy))
 
-        x = self.points[3].x - self.points[0].x
-        y = self.points[3].y - self.points[0].y
-        degree = degrees(atan2(y, x)) - 90
+        x = transformer.points[3].x - transformer.points[0].x
+        y = transformer.points[3].y - transformer.points[0].y
+        degree = atan2(y, x) - pi / 2
 
-        print(degree)
         if abs(degree) > 1e-6:
-            rotate(degree, Vector3(wcx, wcy), points)
+            transformer.rotate(degree, Vector3(wcx, wcy))
 
-        i = 0
-        for j in range(len(self.ppc_points)):
-            self.ppc_points[j] = points[i]
-            i += 1
-
-        for shape in shapes:
-            new_ppc = []
-            for j in range(len(shape.points)):
-                new_ppc.append(points[i])
-                i += 1
-            shape.ppc_points = new_ppc
+        transformer.apply()
 
     @property
     def v_up(self) -> tuple[Vector3, Vector3]:
@@ -99,29 +108,27 @@ class Window:
             print("Window muito pequena!")
             return
 
-        print(
-            f"ZOOM:\n\twindow max: {self.max} --> {final_max}\n\twindow min: {self.min} --> {final_min}"
-        )
+        print(f"ZOOM:\n\twindow max: {self.max} --> {final_max}\n\twindow min: {self.min} --> {final_min}")
 
-        self.points[0] += step
+        self.points[0].x += step
+        self.points[0].y += step
 
         self.points[1].x -= step
         self.points[1].y += step
 
-        self.points[2] -= step
+        self.points[2].x -= step
+        self.points[2].y -= step
 
         self.points[3].x += step
         self.points[3].y -= step
+
+        self.n_zoom += step
 
     def move(self, direction: str, step: float):
         print(f"Movendo Window para {direction}")
         print(f"window max original: {self.max}\nwindow min original: {self.min}")
 
-        vup = [
-            self.points[3].x - self.points[0].x,
-            self.points[3].y - self.points[0].y,
-            1,
-        ]
+        vup = [self.points[3].x - self.points[0].x, self.points[3].y - self.points[0].y, self.points[3].z - self.points[0].z]
 
         # Normalize vup to reduce the numerical error
         vup_normalized = np.array(vup) / np.linalg.norm(vup)
@@ -137,12 +144,34 @@ class Window:
         # Up and Down dont need np.cross
         elif direction == "U":
             displacement_vector = vup_normalized * step
-        else:
-            displacement_vector = -vup_normalized * step
+        elif direction == "D":
 
-        print(displacement_vector)
+            displacement_vector = -vup_normalized * step
+        elif direction == "F":
+            displacement_vector = [0, 0, step]
+        else:
+            displacement_vector = [0, 0, -step]
+
         # Apply the displacement_vector for window points
         for i in range(len(self.points)):
             self.points[i] += Vector3.from_array(displacement_vector)
 
+        self.vpn += Vector3.from_array(displacement_vector)
+        self.vrp += Vector3.from_array(displacement_vector)
+
         print(f"window max final: {self.max}\nwindow min final: {self.min}")
+
+    def rotate(self, degree: float, type: str):
+
+        transformer = Transformer3D()
+        c = transformer.center(self.points)
+        transformer.points = self.points[:] + [self.vpn, self.vrp]
+        transformer.translation(-c).apply()
+        if type == "X":
+            v = (self.points[3] + self.points[2]) / 2
+        elif type == "Y":
+            v = (self.points[3] + self.points[0]) / 2
+        elif type == "Z":
+            v = self.vpn
+
+        transformer.rotate(degree, v).translation(c).apply()

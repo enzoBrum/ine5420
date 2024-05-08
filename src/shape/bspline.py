@@ -22,17 +22,12 @@ class BSpline(Shape):
     ) -> None:
         super().__init__(points, name, color)
 
-        if points_per_segment > 100:
-            self.points_per_segment = 100
-        else:
-            self.points_per_segment = points_per_segment
+        self.points_per_segment = min(max(points_per_segment, 100), 1000)
 
         self.__calculate_delta_matrix()
         self.__bsplines()
 
-    def serialize(
-        self, vertices: dict[Vector3, int], hex_to_color: dict[str, str]
-    ) -> str:
+    def serialize(self, vertices: dict[Vector3, int], hex_to_color: dict[str, str]) -> str:
         raise NotImplementedError
 
     def process_clipped_points(
@@ -42,10 +37,7 @@ class BSpline(Shape):
         window_min: Vector3,
         window_max: Vector3,
     ) -> list[Vector3]:
-        return ignore_lines_in_window_border(
-            points, transformed_points, window_min, window_max
-        )
-    
+        return ignore_lines_in_window_border(points, transformed_points, window_min, window_max)
 
     def __bsplines(self) -> None:
         new_points = []
@@ -111,9 +103,7 @@ class BSpline(Shape):
 
         return coeficients
 
-    def __calculate_segment_points(
-        self, x_delta: array, y_delta: array, z_delta: array
-    ) -> list[Vector3]:
+    def __calculate_segment_points(self, x_delta: array, y_delta: array, z_delta: array) -> list[Vector3]:
         new_points = []
 
         x, d_x, d2_x, d3_x = x_delta
@@ -122,7 +112,7 @@ class BSpline(Shape):
 
         new_points.append(Vector3(x, y, z))
 
-        for _ in range(self.points_per_segment-1):
+        for _ in range(self.points_per_segment - 1):
             x = x + d_x
             y = y + d_y
             z = z + d_z
@@ -144,4 +134,4 @@ class BSpline(Shape):
         for i in range(0, len(points), 2):
             new_points.append((points[i], points[i + 1]))
         for p1, p2 in new_points:
-            canvas.create_line(p1.x, p1.y, p2.x, p2.y, width=3, fill=self.color)
+            canvas.create_line(p1.x, p1.y, p2.x, p2.y, width=3, fill=self.color, tags=self.id)

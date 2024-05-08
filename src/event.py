@@ -11,3 +11,5 @@ class Events:
     SAVE_SHAPES = "<<SaveShapes>>"
     LOAD_SHAPES = "<<LoadShapes>>"
     CHANGE_CLIPPING_ALGORITHM = "<<ChangeClipping>>"
+    CHANGE_MOVE = "<<ChangeMove>>"
+    CHANGE_WINDOW_ROTATION = "<<ChangeWindowRotation>>"

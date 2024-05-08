@@ -23,10 +23,7 @@ class Curve2D(Shape):
         points_per_segment: int = 10,
     ) -> None:
         super().__init__(points, name, color)
-        if points_per_segment > 100:
-            self.points_per_segment = 100
-        else:
-            self.points_per_segment = points_per_segment
+        self.points_per_segment = min(max(points_per_segment, 100), 1000)
         self.__bezier()
 
     def __bezier(self) -> None:
@@ -75,9 +72,7 @@ class Curve2D(Shape):
         self.ppc_points = deepcopy(self.points)
         print(self.points)
 
-    def serialize(
-        self, vertices: dict[Vector3, int], hex_to_color: dict[str, str]
-    ) -> str:
+    def serialize(self, vertices: dict[Vector3, int], hex_to_color: dict[str, str]) -> str:
         raise NotImplementedError
 
     def process_clipped_points(
@@ -87,13 +82,11 @@ class Curve2D(Shape):
         window_min: Vector3,
         window_max: Vector3,
     ) -> list[Vector3]:
-        return ignore_lines_in_window_border(
-            points, transformed_points, window_min, window_max
-        )
+        return ignore_lines_in_window_border(points, transformed_points, window_min, window_max)
 
     def draw(self, canvas: Canvas, points: list[Vector3]):
         new_points = []
         for i in range(0, len(points), 2):
             new_points.append((points[i], points[i + 1]))
         for p1, p2 in new_points:
-            canvas.create_line(p1.x, p1.y, p2.x, p2.y, width=3, fill=self.color)
+            canvas.create_line(p1.x, p1.y, p2.x, p2.y, width=3, fill=self.color, tags=self.id)

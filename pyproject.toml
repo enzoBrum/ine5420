@@ -1,0 +1,5 @@
+[tool.black]
+line-length = 140
+target-version = ['py312']
+preview = true
+enable-unstable-feature = ['string_processing', 'multiline_string_handling', 'typed_params_trailing_comma']
