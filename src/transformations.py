@@ -146,7 +146,6 @@ class Transformer3D(Transformer):
             [2 * (q1 * q3 - q0 * q2), 2 * (q2 * q3 + q0 * q1), q0**2 - q1**2 - q2**2 + q3**2, 0],
             [0, 0, 0, 1],
         ]
-        print(matrix)
         self.transformation_matrix = np.matmul(self.transformation_matrix, matrix)
         return self
 

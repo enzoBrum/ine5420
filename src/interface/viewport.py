@@ -39,16 +39,14 @@ class Viewport:
 
     def _viewport_transform(self, window_min: Vector3, window_max: Vector3, points: list[Vector3], zoom: int) -> list[Vector3]:
         converted_points = deepcopy(points)
-        print(f"ZOOM: {zoom}")
         const = 0.01 if zoom < 40 else 0.05 if zoom < 70 else 0.025 if zoom < 180 else 0.03 if zoom < 250 else 0.032
-        print(f"CONST: {const}")
-        window_max += 10 -zoom * const
-        window_min -= 10 -zoom * const
+        window_max += 10 - zoom * const
+        window_min -= 10 - zoom * const
         for point in converted_points:
             point.x = ((point.x - window_min.x) / (window_max.x - window_min.x)) * (self._max.x - self._min.y)
             point.y = (1 - (point.y - window_min.y) / (window_max.y - window_min.y)) * (self._max.y - self._min.y)
-        window_min += 10 -zoom * const
-        window_max -= 10 -zoom * const
+        window_min += 10 - zoom * const
+        window_max -= 10 - zoom * const
 
         return converted_points
 

@@ -1,6 +1,7 @@
 from math import radians
 from tkinter import ttk
 from tkinter import StringVar
+from tkinter.font import Font
 
 from event import Events
 from vector3 import Vector3
@@ -16,7 +17,9 @@ class Configuration:
     __rotation_degree: StringVar
     move_window_or_shape: StringVar
     window_rotation: StringVar
+    animate_window_rotation: StringVar
     __clipping_algorithm: StringVar
+    __selected_shape_center: StringVar
 
     def __init__(
         self,
@@ -49,7 +52,7 @@ class Configuration:
         ttk.Label(self.frame, text="Rotation Degrees: ").grid(column=0, row=4, pady=3, sticky="W")
         ttk.Entry(self.frame, textvariable=self.__rotation_degree).grid(column=1, row=4, pady=3, sticky="W")
 
-        ttk.Separator(self.frame, orient="horizontal").grid(row=5, column=0, ipadx=200, columnspan=2, pady=(20, 20))
+        ttk.Separator(self.frame, orient="horizontal").grid(row=5, column=0, ipadx=250, columnspan=2, pady=(20, 20))
 
         ttk.Label(self.frame, text="Clipping Algorithm").grid(column=0, row=6, pady=3, sticky="W")
 
@@ -71,7 +74,7 @@ class Configuration:
             command=lambda: self.frame.event_generate(Events.CHANGE_CLIPPING_ALGORITHM, data="liang"),
         ).grid(column=0, row=8, pady=3, sticky="W")
 
-        ttk.Separator(self.frame, orient="horizontal").grid(row=9, column=0, ipadx=200, columnspan=2, pady=(20, 20))
+        ttk.Separator(self.frame, orient="horizontal").grid(row=9, column=0, ipadx=250, columnspan=2, pady=(20, 20))
 
         ttk.Label(self.frame, text="Movement").grid(column=0, row=10, pady=3, sticky="W")
 
@@ -91,7 +94,7 @@ class Configuration:
             command=lambda: self.frame.event_generate(Events.CHANGE_MOVE, data="SHAPE"),
         ).grid(column=0, row=12, pady=3, sticky="W")
 
-        ttk.Separator(self.frame, orient="horizontal").grid(row=13, column=0, ipadx=200, columnspan=2, pady=(20, 20))
+        ttk.Separator(self.frame, orient="horizontal").grid(row=13, column=0, ipadx=250, columnspan=2, pady=(20, 20))
 
         ttk.Label(self.frame, text="Window Rotation").grid(row=14, column=0, pady=3, sticky="W")
         self.window_rotation = StringVar(value="axis")
@@ -120,6 +123,22 @@ class Configuration:
             variable=self.window_rotation,
         ).grid(column=0, row=18, pady=3, sticky="W")
 
+        self.__selected_shape_center = StringVar(value="None")
+        ttk.Separator(self.frame, orient="horizontal").grid(row=19, column=0, ipadx=250, columnspan=2, pady=(20, 20))
+
+        ttk.Label(self.frame, text="Shape Center: ").grid(row=20, column=0, pady=3, sticky="W")
+        ttk.Label(self.frame, textvariable=self.__selected_shape_center).grid(row=20, column=1, padx=3, sticky="W")
+
+        ttk.Separator(self.frame, orient="horizontal").grid(row=21, column=0, ipadx=250, columnspan=2, pady=(20, 20))
+
+        self.animate_window_rotation = StringVar(value="off")
+        ttk.Checkbutton(
+            self.frame, text="Animate Window Rotation", variable=self.animate_window_rotation, onvalue="on", offvalue="off"
+        ).grid(row=22, column=0, pady=3, sticky="W")
+        ttk.Label(
+            self.frame, text="Warning! Tkinter is slow, so this will eventually burn your CPU!", foreground="red", font=Font(size=9)
+        ).grid(row=23, column=0, pady=3, sticky="W")
+
     @property
     def rotation_axis(self) -> Vector3:
         axis = self.__rotation_axis.get().strip()[1:-1]  # ignora () e []
@@ -141,3 +160,15 @@ class Configuration:
     @property
     def rotation_rad(self) -> float:
         return radians(float(self.__rotation_degree.get()))
+
+    @property
+    def selected_shape_center(self) -> tuple[float, float, float]:
+        c = self.__selected_shape_center.get().strip()[1:-1].split(",")
+        return (float(x) for x in c)
+
+    @selected_shape_center.setter
+    def selected_shape_center(self, new_value: Vector3 | None):
+        if new_value is None:
+            self.__selected_shape_center.set("None")
+        else:
+            self.__selected_shape_center.set(str(tuple(round(float(x), 2) for x in new_value)))

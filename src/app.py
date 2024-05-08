@@ -33,6 +33,7 @@ class App:
     shape_listbox: ShapeListbox
     movement_controls: MovementControls
     configuration: Configuration
+    animation_running: bool
 
     def redraw_viewport(func):
         @wraps(func)
@@ -95,7 +96,6 @@ class App:
                     )
 
             print(f"Added shape: {shape}")
-            print(f"NAME: {shape.name}")
             self.display_file.append(shape)
             self.shape_listbox.shapes_str_var.set(self.display_file._shapes)
         except:
@@ -142,6 +142,8 @@ class App:
             ).apply()
         self.display_file.all_dirty()
 
+        self.root.after(40, lambda: self.rotate_window(None))
+
     @redraw_viewport
     def move_window(self, direction: str):
         self.window.move(direction, self.configuration.move_step)
@@ -186,10 +188,12 @@ class App:
         else:
             displacement_vector = [0, 0, -step]
 
-        print(f"Displacement vector: {displacement_vector}")
         # Apply the displacement_vector for window points
         for i in range(len(self.selected_shape.points)):
             self.selected_shape.points[i] += Vector3.from_array(displacement_vector)
+
+        center = self.selected_shape.transformer.center(self.selected_shape.points)
+        self.configuration.selected_shape_center = center
 
     @redraw_viewport
     def scale(self, factor: str):
@@ -198,12 +202,16 @@ class App:
         step = self.configuration.scale_step if factor == "+" else 1 / self.configuration.scale_step
 
         self.selected_shape.transformer.scale(step).apply()
+        center = self.selected_shape.transformer.center(self.selected_shape.points)
+        self.configuration.selected_shape_center = center
 
     @redraw_viewport
     def rotate(self, e):
         self.selected_shape.dirty = True
 
         self.selected_shape.transformer.rotate(self.configuration.rotation_rad, self.configuration.rotation_axis).apply()
+        center = self.selected_shape.transformer.center(self.selected_shape.points)
+        self.configuration.selected_shape_center = center
 
     @redraw_viewport
     def clear_selected_shape(self, e):
@@ -211,6 +219,7 @@ class App:
             self.selected_shape.dirty = True
             self.selected_shape.color = self.selected_shape_old_color
             self.selected_shape = None
+            self.configuration.selected_shape_center = None
 
     @redraw_viewport
     def update_selected_shape(self, selected_shape_id: str):
@@ -223,10 +232,10 @@ class App:
         self.selected_shape_old_color = self.selected_shape.color
         self.selected_shape.color = "gold"
 
-        print(f"Selected shape: {self.selected_shape}")
-
         self.configuration.move_window_or_shape.set("SHAPE")
         self.movement_controls.set_moving("SHAPE")
+        center = self.selected_shape.transformer.center(self.selected_shape.points)
+        self.configuration.selected_shape_center = center
 
     @redraw_viewport
     def change_line_clipping(self, alg: str):

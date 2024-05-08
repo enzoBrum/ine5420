@@ -36,7 +36,7 @@ class Window:
             Vector3(min.x, max.y, min.z),  # (x3, y3)
         ]
 
-        print(f"WINDOW POINTSSS: {self.points}")
+        print(f"WINDOW POINTS: {self.points}")
 
         self.__og_points = deepcopy(self.points)
         self.ppc_points = deepcopy(self.points)
@@ -59,8 +59,6 @@ class Window:
         self.vpn = self.vpn / np.linalg.norm(self.vpn) + self.vrp
 
     def ppc_transformation(self, shapes: list[Shape]):
-        print(f"{self.ppc_points=}, {len(self.ppc_points)=}")
-
         transformer = Transformer2D()
         wcx, wcy, _ = transformer.center(self.ppc_points)
 
@@ -69,11 +67,7 @@ class Window:
             if shape.dirty:
                 transformer.points += shape.ppc_points
 
-        print(f"{wcx=}, {wcy=}")
-
         transformer.translation(Vector3(-wcx, -wcy))
-
-        # print(f"{transformer.points=}")
 
         x = transformer.points[3].x - transformer.points[0].x
         y = transformer.points[3].y - transformer.points[0].y
@@ -83,9 +77,6 @@ class Window:
             transformer.rotate(degree, Vector3(wcx, wcy))
 
         transformer.apply()
-
-        print(f"{self.ppc_points=}")
-        # print(transformer.points)
 
     @property
     def v_up(self) -> tuple[Vector3, Vector3]:
@@ -154,14 +145,13 @@ class Window:
         elif direction == "U":
             displacement_vector = vup_normalized * step
         elif direction == "D":
-            
+
             displacement_vector = -vup_normalized * step
         elif direction == "F":
             displacement_vector = [0, 0, step]
         else:
             displacement_vector = [0, 0, -step]
 
-        print(f"Displacement vector: {displacement_vector}")
         # Apply the displacement_vector for window points
         for i in range(len(self.points)):
             self.points[i] += Vector3.from_array(displacement_vector)
@@ -172,7 +162,6 @@ class Window:
         print(f"window max final: {self.max}\nwindow min final: {self.min}")
 
     def rotate(self, degree: float, type: str):
-        print(f"Rotacionando Window {degree} graus {type}")
 
         transformer = Transformer3D()
         c = transformer.center(self.points)
@@ -185,7 +174,4 @@ class Window:
         elif type == "Z":
             v = self.vpn
 
-        print(f"ROTAÇÃO ANTES: {self.points=}, {self.vpn=}, {self.vrp=}")
         transformer.rotate(degree, v).translation(c).apply()
-        print(f"ROTAÇÃO DEPOIS: {self.points=}, {self.vpn=}, {self.vrp=}")
-        print(f"window max final: {self.max}\nwindow min final: {self.min}")

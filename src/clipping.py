@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from itertools import batched
+
 from vector3 import Vector3
 
 
@@ -77,7 +78,6 @@ class CohenSutherland(Clipper):
 
     @classmethod
     def clip(cls, points: list[Vector3], window_max: Vector3, window_min: Vector3) -> list[Vector3]:
-        print("Clipando com cohen")
         xw_min = window_min.x
         xw_max = window_max.x
 
@@ -93,9 +93,6 @@ class CohenSutherland(Clipper):
 
         rc1 = cls.__get_rc(x1, y1, xw_min, xw_max, yw_min, yw_max)
         rc2 = cls.__get_rc(x2, y2, xw_min, xw_max, yw_min, yw_max)
-
-        # print(f"RC1: {bin(rc1)}, RC2: {bin(rc2)}")
-        # print(f"XW_MIN: {xw_min}, X1: {x1}, X2: {x2}")
 
         # dentro
         if rc1 == rc2 == 0:
@@ -225,7 +222,6 @@ class CohenSutherland(Clipper):
                 x2 = xw_max
             if not y_inside:
                 y2 = yw_min
-        # print(f"X1: {x1}, X2: {x2}, Y1: {y1}, Y2: {y2}, XW_MAX: {xw_max}")
         return [Vector3(x1, y1), Vector3(x2, y2)]
 
 
@@ -234,26 +230,25 @@ class SutherlandHodgman(Clipper):
     def clip(cls, points: list[Vector3], window_max: Vector3, window_min: Vector3) -> list[Vector3]:
         points_list = []
         extra_points = 0
-        print(f"INPUT: {points}")
         for p1, p2 in batched(points, 2):
             p = p1
             q = p2
-            print(f"P: {p}, Q: {q}")
+            # print(f"P: {p}, Q: {q}")
 
             p_inside = (window_min.x <= p.x <= window_max.x) and (window_min.y <= p.y <= window_max.y)
             q_inside = (window_min.x <= q.x <= window_max.x) and (window_min.y <= q.y <= window_max.y)
 
             if p_inside and q_inside:
-                print("P e Q dentro")
+                # print("P e Q dentro")
                 points_list.append(p)
                 points_list.append(q)
             elif p_inside and not q_inside:
-                print("P dentro e Q fora")
+                # print("P dentro e Q fora")
                 intersect = LiangBarsky.clip([p, q], window_max, window_min)
                 points_list.append(p)
                 points_list.append(intersect[1])
             elif not p_inside and q_inside:
-                print("P fora e Q dentro")
+                # print("P fora e Q dentro")
                 intersect = LiangBarsky.clip([p, q], window_max, window_min)
                 if intersect[0] == q:
                     points_list.append(intersect[1])
@@ -261,7 +256,7 @@ class SutherlandHodgman(Clipper):
                     points_list.append(intersect[0])
                 points_list.append(q)
             elif not p_inside and not q_inside:
-                print("P e Q fora")
+                # print("P e Q fora")
                 intersect = LiangBarsky.clip([p, q], window_max, window_min)
                 if len(intersect) > 0:
                     points_list.append(intersect[0])
@@ -286,7 +281,7 @@ class SutherlandHodgman(Clipper):
                     """
         if extra_points == len(points_list):
             points_list = []
-        print(f"OUTPUT: {points_list}")
+        # print(f"OUTPUT: {points_list}")
 
         return points_list
 
