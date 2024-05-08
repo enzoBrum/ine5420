@@ -29,7 +29,7 @@ class Configuration:
     ):
         self.root = root
         self.frame = ttk.Frame(root, padding="15 10 10 10", border=3, borderwidth=3, relief="flat")
-        self.frame.grid(row=row, column=column, sticky="NSWE")
+        self.frame.grid(row=row, column=column, sticky="NSWE", rowspan=20, columnspan=2)
 
         self.__move_step = StringVar(value="10.0")
         self.__rotation_axis = StringVar(value="(10, 10, 10)")
@@ -52,7 +52,7 @@ class Configuration:
         ttk.Label(self.frame, text="Rotation Degrees: ").grid(column=0, row=4, pady=3, sticky="W")
         ttk.Entry(self.frame, textvariable=self.__rotation_degree).grid(column=1, row=4, pady=3, sticky="W")
 
-        ttk.Separator(self.frame, orient="horizontal").grid(row=5, column=0, ipadx=250, columnspan=2, pady=(20, 20))
+        ttk.Separator(self.frame, orient="horizontal").grid(row=5, column=0, ipadx=200, columnspan=2, pady=(20, 20))
 
         ttk.Label(self.frame, text="Clipping Algorithm").grid(column=0, row=6, pady=3, sticky="W")
 
@@ -74,7 +74,7 @@ class Configuration:
             command=lambda: self.frame.event_generate(Events.CHANGE_CLIPPING_ALGORITHM, data="liang"),
         ).grid(column=0, row=8, pady=3, sticky="W")
 
-        ttk.Separator(self.frame, orient="horizontal").grid(row=9, column=0, ipadx=250, columnspan=2, pady=(20, 20))
+        ttk.Separator(self.frame, orient="horizontal").grid(row=9, column=0, ipadx=200, columnspan=2, pady=(20, 20))
 
         ttk.Label(self.frame, text="Movement").grid(column=0, row=10, pady=3, sticky="W")
 
@@ -94,7 +94,7 @@ class Configuration:
             command=lambda: self.frame.event_generate(Events.CHANGE_MOVE, data="SHAPE"),
         ).grid(column=0, row=12, pady=3, sticky="W")
 
-        ttk.Separator(self.frame, orient="horizontal").grid(row=13, column=0, ipadx=250, columnspan=2, pady=(20, 20))
+        ttk.Separator(self.frame, orient="horizontal").grid(row=13, column=0, ipadx=200, columnspan=2, pady=(20, 20))
 
         ttk.Label(self.frame, text="Window Rotation").grid(row=14, column=0, pady=3, sticky="W")
         self.window_rotation = StringVar(value="axis")
@@ -124,12 +124,12 @@ class Configuration:
         ).grid(column=0, row=18, pady=3, sticky="W")
 
         self.__selected_shape_center = StringVar(value="None")
-        ttk.Separator(self.frame, orient="horizontal").grid(row=19, column=0, ipadx=250, columnspan=2, pady=(20, 20))
+        ttk.Separator(self.frame, orient="horizontal").grid(row=19, column=0, ipadx=200, columnspan=2, pady=(20, 20))
 
         ttk.Label(self.frame, text="Shape Center: ").grid(row=20, column=0, pady=3, sticky="W")
-        ttk.Label(self.frame, textvariable=self.__selected_shape_center).grid(row=20, column=1, padx=3, sticky="W")
+        ttk.Label(self.frame, textvariable=self.__selected_shape_center, width=20).grid(row=20, column=1, pady=3, sticky="W")
 
-        ttk.Separator(self.frame, orient="horizontal").grid(row=21, column=0, ipadx=250, columnspan=2, pady=(20, 20))
+        ttk.Separator(self.frame, orient="horizontal").grid(row=21, column=0, ipadx=200, columnspan=2, pady=(20, 20))
 
         self.animate_window_rotation = StringVar(value="off")
         ttk.Checkbutton(

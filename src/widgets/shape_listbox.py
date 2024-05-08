@@ -25,7 +25,7 @@ class ShapeListbox:
         self.add_object = AddObject(self.root)
         self.shapes_str_var = StringVar()
 
-        ttk.Label(root, text="Objetos").grid(column=0, row=1, sticky="w")
+        ttk.Label(root, text="Objetos").grid(column=column, row=row, sticky="w")
         self.listbox = Listbox(
             root,
             height=12,
@@ -35,14 +35,14 @@ class ShapeListbox:
             highlightbackground="black",
             highlightthickness=1,
         )
-        self.listbox.grid(column=column, row=row, sticky=(N, S, E, W))
+        self.listbox.grid(column=column, row=row + 1, sticky=(N, S, E, W))
         scrollbar = ttk.Scrollbar(root, orient="vertical", command=self.listbox.yview)
-        scrollbar.grid(column=column + 1, row=row, sticky=(N, S, W))
+        scrollbar.grid(column=column + 1, row=row + 1, sticky=(N, S, W))
         self.listbox.configure(yscrollcommand=scrollbar.set)
         self.listbox.bind("<<ListboxSelect>>", self.__update_selected_shape)
 
         button_frame = ttk.Frame(root)
-        button_frame.grid(column=0, row=3)
+        button_frame.grid(column=0, row=row + 2)
         ttk.Button(
             button_frame,
             text="Add Object",

@@ -122,6 +122,8 @@ class App:
 
     @redraw_viewport
     def rotate_window(self, e):
+        if self.animation_running and e is not True:
+            return
         match self.configuration.window_rotation.get():
             case "horizontal":
                 axis = "X"
@@ -142,7 +144,12 @@ class App:
             ).apply()
         self.display_file.all_dirty()
 
-        self.root.after(40, lambda: self.rotate_window(None))
+        animate = self.configuration.animate_window_rotation.get() == "on"
+        if animate:
+            self.root.after(40, self.rotate_window, True)  # 40 ms --> 25 FPS
+            self.animation_running = True
+        elif self.animation_running:
+            self.animation_running = False
 
     @redraw_viewport
     def move_window(self, direction: str):
@@ -248,7 +255,7 @@ class App:
 
     def __create_viewport_and_log(self):
         viewport_frame = ttk.Frame(self.frame, padding="12 -3 12 12")
-        viewport_frame.grid(column=1, row=0)
+        viewport_frame.grid(column=6, row=0)
 
         ttk.Label(viewport_frame, text="Viewport").grid(column=0, row=0, sticky="w")
 
@@ -263,19 +270,25 @@ class App:
 
     def __create_left_menu(self):
         menu_frame = ttk.LabelFrame(self.frame, padding="12 -3 12 12", border=3, borderwidth=3, relief="groove", text="Function Menu")
-        menu_frame.grid(column=0, row=0, rowspan=12, sticky="W")
+        menu_frame.grid(column=0, row=0, sticky="NSEW", rowspan=20, columnspan=5)
+
+        left_frame = ttk.Frame(menu_frame)
+        left_frame.grid(row=0, column=0)
+
+        right_frame = ttk.Frame(menu_frame)
+        right_frame.grid(row=0, column=3)
 
         self.shape_listbox = ShapeListbox(
-            menu_frame,
+            left_frame,
             column=0,
-            row=2,
+            row=0,
         )
 
-        self.movement_controls = MovementControls(menu_frame, column=0, row=4)
+        self.movement_controls = MovementControls(left_frame, column=0, row=4)
 
-        ttk.Separator(menu_frame, orient="vertical").grid(row=2, column=3, rowspan=3, ipady=400, ipadx=10, padx=(30, 10))
+        ttk.Separator(menu_frame, orient="vertical").grid(row=0, column=2, rowspan=3, ipady=400, ipadx=10, padx=(30, 10))
 
-        self.configuration = Configuration(menu_frame, column=4, row=2)
+        self.configuration = Configuration(right_frame, column=3, row=2)
 
     def __bind_events(self):
         self.bind_event(lambda move: self.movement_controls.set_moving(move), Events.CHANGE_MOVE)
@@ -309,6 +322,7 @@ class App:
         # self.frame.rowconfigure(0, weight=1)
         # self.frame.columnconfigure(0, weight=2)
         self.display_file = DisplayFile()
+        self.animation_running = False
 
         self.__create_left_menu()
         self.__create_viewport_and_log()

@@ -21,7 +21,7 @@ class MovementControls:
     ):
         self.root = root
         self.frame = ttk.Frame(root, padding="15 10 10 10", border=3, borderwidth=3, relief="flat")
-        self.frame.grid(row=row, column=column, sticky="NSWE")
+        self.frame.grid(row=row, column=column, sticky="NSWE", rowspan=4)
         self.frame.rowconfigure(0, weight=1)
         self.frame.columnconfigure(0, weight=1)
         self._moving = "WINDOW"
