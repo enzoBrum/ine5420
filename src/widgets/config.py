@@ -43,7 +43,7 @@ class Configuration:
         ttk.Label(self.frame, text="Scale Step: ").grid(column=0, row=1, pady=3, sticky="W")
         ttk.Entry(self.frame, textvariable=self.__scale_step).grid(column=1, row=1, pady=3, sticky="W")
 
-        ttk.Label(self.frame, text="Zoom Step: ").grid(column=0, row=1, pady=3, sticky="W")
+        ttk.Label(self.frame, text="Zoom Step: ").grid(column=0, row=2, pady=3, sticky="W")
         ttk.Entry(self.frame, textvariable=self.__zoom_step).grid(column=1, row=2, pady=3, sticky="W")
 
         ttk.Label(self.frame, text="Rotation Axis: ").grid(column=0, row=3, pady=3, sticky="W")
