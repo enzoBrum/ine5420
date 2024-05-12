@@ -17,6 +17,7 @@ class Window:
     __og_points: list[Vector3]
     vrp: Vector3
     vpn: Vector3
+    cop: Vector3
     """
     (x3, y3) ------------------------- (x2, y2)
         |                                 |
@@ -36,7 +37,6 @@ class Window:
             Vector3(min.x, max.y, min.z),  # (x3, y3)
         ]
 
-        print(f"WINDOW POINTS: {self.points}")
 
         self.__og_points = deepcopy(self.points)
         self.ppc_points = deepcopy(self.points)
@@ -48,6 +48,12 @@ class Window:
             self.vpn = -self.vpn
         self.vpn = self.vpn / np.linalg.norm(self.vpn) + self.vrp
 
+        #self.cop = -(self.vpn - self.vrp)
+        #self.cop = self.vrp - 2 * self.vpn
+        self.cop = -self.vpn - 50
+        print(f"WINDOW POINTS: {self.points}, {self.cop=}, {self.vpn=}, {self.vrp=}")
+
+
     def reset(self):
         self.points = deepcopy(self.__og_points)
         self.vrp = Transformer3D().center(self.points)
@@ -57,6 +63,7 @@ class Window:
         if self.vpn.z < 0:
             self.vpn = -self.vpn
         self.vpn = self.vpn / np.linalg.norm(self.vpn) + self.vrp
+        self.cop = -self.vpn - 50
 
     def ppc_transformation(self, shapes: list[Shape]):
         transformer = Transformer2D()
@@ -158,6 +165,7 @@ class Window:
 
         self.vpn += Vector3.from_array(displacement_vector)
         self.vrp += Vector3.from_array(displacement_vector)
+        self.cop += Vector3.from_array(displacement_vector)
 
         print(f"window max final: {self.max}\nwindow min final: {self.min}")
 
@@ -165,7 +173,7 @@ class Window:
 
         transformer = Transformer3D()
         c = transformer.center(self.points)
-        transformer.points = self.points[:] + [self.vpn, self.vrp]
+        transformer.points = self.points[:] + [self.vpn, self.vrp, self.cop]
         transformer.translation(-c).apply()
         if type == "X":
             v = (self.points[3] + self.points[2]) / 2

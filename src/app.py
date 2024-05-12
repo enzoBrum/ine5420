@@ -14,6 +14,7 @@ from event import Events
 from interface import Viewport, Window
 from shape import BSpline, Curve2D, Line, Point, Point3D, Shape, Wireframe, Wireframe3D
 from transformations import Transformer3D
+from projections import parallel_projection, perspective_projection
 from vector3 import Vector3
 from widgets import Configuration, MovementControls, ShapeListbox
 
@@ -253,6 +254,15 @@ class App:
             Line.clipper = LiangBarsky
         self.display_file.all_dirty()
 
+    @redraw_viewport
+    def change_projection(self, proj: str):
+        print(f"Mudando projeção para {proj}")
+        if proj == "perspective":
+            self.viewport.projection = perspective_projection
+        else:
+            self.viewport.projection = parallel_projection
+        self.display_file.all_dirty()
+
     def __create_viewport_and_log(self):
         viewport_frame = ttk.Frame(self.frame, padding="12 -3 12 12")
         viewport_frame.grid(column=6, row=0)
@@ -314,8 +324,8 @@ class App:
 
         self.selected_shape = None
         self.window = Window(
-            Vector3(-100, -100, -150),
-            Vector3(VIEWPORT_DIMENSION[0], VIEWPORT_DIMENSION[1], 280),
+            Vector3(-100, -100, -100),
+            Vector3(VIEWPORT_DIMENSION[0], VIEWPORT_DIMENSION[1], -300),
         )
         self.frame = ttk.Frame(self.root, padding="3 3 12 12")
         self.frame.grid(column=0, row=0, sticky=(N, W, E, S))
@@ -327,6 +337,8 @@ class App:
         self.__create_left_menu()
         self.__create_viewport_and_log()
         self.__bind_events()
+
+        self.load_shapes("./cube_and_pyramid.obj")
 
     def run(self):
         self.root.mainloop()

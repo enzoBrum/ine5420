@@ -13,3 +13,4 @@ class Events:
     CHANGE_CLIPPING_ALGORITHM = "<<ChangeClipping>>"
     CHANGE_MOVE = "<<ChangeMove>>"
     CHANGE_WINDOW_ROTATION = "<<ChangeWindowRotation>>"
+    CHANGE_PROJECTION = "<<ChangeProjecion>>"

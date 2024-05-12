@@ -83,6 +83,9 @@ class Transformer2D(Transformer):
 
 
 class Transformer3D(Transformer):
+    def arbitrary(self, transformation_matrix) -> Self:
+        self.transformation_matrix = np.matmul(self.transformation_matrix, transformation_matrix)
+        return self
 
     def rotation_matrix(self, axis: Literal["X", "Y", "Z"], degree: float):
         match axis:
@@ -130,7 +133,11 @@ class Transformer3D(Transformer):
         Roda o mundo em torno de um eixo arbitrário.
         """
 
+        # print(f"{axis=}")
+
         magnitude = sqrt(sum([a**2 for a in axis]))
+        if magnitude == 0:
+            return self
         cx = axis.x / magnitude
         cy = axis.y / magnitude
         cz = axis.z / magnitude

@@ -1,9 +1,10 @@
 from copy import deepcopy
 from tkinter import Canvas, Misc
+from typing import Callable
 
 from display_file import DisplayFile
 from interface.window import Window
-from projections import parallel_projection
+from projections import parallel_projection, perspective_projection
 from shape import Shape
 from vector3 import Vector3
 
@@ -12,6 +13,7 @@ class Viewport:
     _canvas: Canvas
     _min: Vector3
     _max: Vector3
+    projection: Callable[[Window, DisplayFile], None]
 
     def __init__(
         self,
@@ -22,6 +24,7 @@ class Viewport:
     ):
         self._min = min_vec
         self._max = max_vec
+        self.projection = perspective_projection
 
         canvas_size = self._max - self._min
         self._canvas = Canvas(
@@ -69,7 +72,7 @@ class Viewport:
             if shape.dirty:
                 shape.ppc_points = deepcopy(shape.points)
 
-        parallel_projection(window, display_file)
+        self.projection(window, display_file)
         window.ppc_transformation(display_file)
 
         window_max = window.max_ppc

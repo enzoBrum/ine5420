@@ -37,8 +37,8 @@ class Configuration:
         self.__zoom_step = StringVar(value="10.0")
         self.__rotation_degree = StringVar(value="10.0")
 
-        ttk.Label(self.frame, text="Move Step: ").grid(column=0, row=0, pady=(60, 3), sticky="W")
-        ttk.Entry(self.frame, textvariable=self.__move_step).grid(column=1, row=0, pady=(70, 3), sticky="W")
+        ttk.Label(self.frame, text="Move Step: ").grid(column=0, row=0, pady=(10, 3), sticky="W")
+        ttk.Entry(self.frame, textvariable=self.__move_step).grid(column=1, row=0, pady=(10, 3), sticky="W")
 
         ttk.Label(self.frame, text="Scale Step: ").grid(column=0, row=1, pady=3, sticky="W")
         ttk.Entry(self.frame, textvariable=self.__scale_step).grid(column=1, row=1, pady=3, sticky="W")
@@ -139,6 +139,23 @@ class Configuration:
             self.frame, text="Warning! Tkinter is slow, so this will eventually burn your CPU!", foreground="red", font=Font(size=9)
         ).grid(row=23, column=0, pady=3, sticky="W")
 
+        ttk.Separator(self.frame, orient="horizontal").grid(row=24, column=0, ipadx=200, columnspan=2, pady=(20, 20))
+        self.__projection = StringVar(value="perspective")
+        ttk.Label(self.frame, text="Projection").grid(row=25, column=0, pady=3, sticky="W")
+        ttk.Radiobutton(
+            self.frame,
+            text="Parallel projection",
+            value="parallel",
+            variable=self.__projection,
+            command=lambda: self.frame.event_generate(Events.CHANGE_PROJECTION, data="parallel"),
+        ).grid(column=0, row=26, pady=3, sticky="W")
+        ttk.Radiobutton(
+            self.frame,
+            text="Perspective",
+            value="perspective",
+            variable=self.window_rotation,
+            command=lambda: self.frame.event_generate(Events.CHANGE_CLIPPING_ALGORITHM, data="perspective"),
+        ).grid(column=0, row=17, pady=3, sticky="W")
     @property
     def rotation_axis(self) -> Vector3:
         axis = self.__rotation_axis.get().strip()[1:-1]  # ignora () e []
