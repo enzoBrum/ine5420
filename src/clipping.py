@@ -13,8 +13,8 @@ class Clipper(ABC):
 class PointClipper(Clipper):
     @classmethod
     def clip(cls, points: list[Vector3], window_max: Vector3, window_min: Vector3) -> list[Vector3]:
-        x, y, z = points[0]
-        return points if window_min.x <= x <= window_max.x and window_min.y <= y <= window_max.y and z >= window_min.z  else []
+        x, y, _ = points[0]
+        return points if window_min.x <= x <= window_max.x and window_min.y <= y <= window_max.y else []
 
 
 class LiangBarsky(Clipper):
@@ -57,9 +57,6 @@ class LiangBarsky(Clipper):
         x2 = p_b.x + c2 * p2
         y2 = p_b.y + c2 * p4
 
-        if p_b.z < window_min.z or p_a.z < window_min.z:
-            return []
-
         return [Vector3(x1, y1), Vector3(x2, y2)]
 
 
@@ -90,9 +87,6 @@ class CohenSutherland(Clipper):
         p1, p2 = points
         x1, y1, _ = p1
         x2, y2, _ = p2
-
-        if p1.z < window_min.z or p2.z < window_min.z:
-            return []
 
         if x1 > x2:
             x1, y1, x2, y2 = x2, y2, x1, y1
@@ -239,8 +233,6 @@ class SutherlandHodgman(Clipper):
         for p1, p2 in batched(points, 2):
             p = p1
             q = p2
-            if p1.z < window_min.z or p2.z < window_min.z:
-                return []
             # print(f"P: {p}, Q: {q}")
 
             p_inside = (window_min.x <= p.x <= window_max.x) and (window_min.y <= p.y <= window_max.y)
@@ -300,9 +292,6 @@ class BezierClipper(Clipper):
         returned_points = []
         for i in range(len(points) - 1):
             p1, p2 = points[i], points[i + 1]
-
-            if p1.z < window_min.z or p2.z < window_min.z:
-                return []
 
             line = LiangBarsky.clip([p1, p2], window_max, window_min)
             if len(line):

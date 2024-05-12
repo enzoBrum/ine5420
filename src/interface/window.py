@@ -111,7 +111,7 @@ class Window:
         final_max = self.max - step
         final_min = self.min + step
 
-        if abs(final_max.x - final_min.x) < 10 or abs(final_max.y - final_min.y) < 10:
+        if abs(final_max.x - final_min.x) < 10 or abs(final_max.y - final_min.y) < 10 or not (-250 <= self.n_zoom + step <= 250):
             print("Window muito pequena!")
             return
 

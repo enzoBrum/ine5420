@@ -45,6 +45,7 @@ class Viewport:
         const = 0.01 if zoom < 40 else 0.05 if zoom < 70 else 0.025 if zoom < 180 else 0.03 if zoom < 250 else 0.032
         window_max += 10 - zoom * const
         window_min -= 10 - zoom * const
+
         for point in converted_points:
             point.x = ((point.x - window_min.x) / (window_max.x - window_min.x)) * (self._max.x - self._min.y)
             point.y = (1 - (point.y - window_min.y) / (window_max.y - window_min.y)) * (self._max.y - self._min.y)

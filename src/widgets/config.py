@@ -153,9 +153,9 @@ class Configuration:
             self.frame,
             text="Perspective",
             value="perspective",
-            variable=self.window_rotation,
-            command=lambda: self.frame.event_generate(Events.CHANGE_CLIPPING_ALGORITHM, data="perspective"),
-        ).grid(column=0, row=17, pady=3, sticky="W")
+            variable=self.__projection,
+            command=lambda: self.frame.event_generate(Events.CHANGE_PROJECTION, data="perspective"),
+        ).grid(column=0, row=27, pady=3, sticky="W")
     @property
     def rotation_axis(self) -> Vector3:
         axis = self.__rotation_axis.get().strip()[1:-1]  # ignora () e []

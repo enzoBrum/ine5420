@@ -314,6 +314,7 @@ class App:
         self.bind_event(self.save_shapes, Events.SAVE_SHAPES, True)
         self.bind_event(self.load_shapes, Events.LOAD_SHAPES, True)
         self.bind_event(self.change_line_clipping, Events.CHANGE_CLIPPING_ALGORITHM, True)
+        self.bind_event(self.change_projection, Events.CHANGE_PROJECTION, True)
 
     def __init__(self):
         self.root = Tk()
