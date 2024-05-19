@@ -68,7 +68,7 @@ class Viewport:
             self._max.y - self._min.y - 10,
             outline="red",
         )
-
+        
         for shape in display_file:
             if shape.dirty:
                 shape.ppc_points = deepcopy(shape.points)

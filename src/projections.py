@@ -67,4 +67,3 @@ def perspective_projection(window: "Window", display_file: DisplayFile):
         
         point.x = point.x/(point.z/d)
         point.y = point.y/(point.z/d)
-

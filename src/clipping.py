@@ -301,3 +301,15 @@ class BezierClipper(Clipper):
         if len(line):
             returned_points.append(line[1])
         return returned_points
+
+class Bezier3DClipper(Clipper):
+    @classmethod
+    def clip(cls, points: list[Vector3], window_max: Vector3, window_min: Vector3) -> list[Vector3]:
+        returned_points = []
+        for p1, p2 in batched(points, 2):
+            line = LiangBarsky.clip([p1, p2], window_max, window_min)
+            if len(line) > 0:
+                returned_points.append(line[0])
+                returned_points.append(line[1])
+
+        return returned_points

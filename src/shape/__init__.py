@@ -7,6 +7,7 @@ from .curve import Curve2D
 from .point_3d import Point3D
 from .line_3d import Line3D
 from .wireframe_3d import Wireframe3D
+from .curve_3d import Curve3D
 
 __all__ = [
     "Line",
@@ -14,6 +15,7 @@ __all__ = [
     "Shape",
     "Wireframe",
     "Curve2D",
+    "Curve3D"
     "BSpline",
     "Point3D",
     "Line3D",

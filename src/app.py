@@ -12,7 +12,7 @@ from descritor_obj import DescritorOBJ
 from display_file import DisplayFile
 from event import Events
 from interface import Viewport, Window
-from shape import BSpline, Curve2D, Line, Point, Point3D, Shape, Wireframe, Wireframe3D
+from shape import BSpline, Curve2D, Line, Point, Point3D, Shape, Wireframe, Wireframe3D, Curve3D
 from transformations import Transformer3D
 from projections import parallel_projection, perspective_projection
 from vector3 import Vector3
@@ -60,7 +60,7 @@ class App:
 
             if "points" in data:
                 points = [Vector3(*coords) for coords in data["points"]]
-            else:
+            elif "lines" in data:
                 lines = [(Vector3(*a[0]), Vector3(*a[1])) for a in data["lines"]]
             name = data["name"]
 
@@ -95,6 +95,9 @@ class App:
                         color,
                         int(data["points_per_segment"]),
                     )
+                case "curve3d":
+                    control_points = [(Vector3(*a)) for a in data["control_points"]]
+                    shape = Curve3D(control_points, name, color, int(data["points_per_segment"]))
 
             print(f"Added shape: {shape}")
             self.display_file.append(shape)
@@ -340,6 +343,23 @@ class App:
         self.__bind_events()
 
         self.load_shapes("./cube_and_pyramid.obj")
+
+        self.add_shape(
+            json.dumps(
+                {
+                    "type": "curve3d",
+                    "control_points": [
+                        (0.0, 0.0, 100.0), (50.0, 0.0, 125.0), (100.0, 0.0, 125.0), (150.0, 0.0, 100.0),
+                        (0.0, 50.0, 125.0), (50.0, 50.0, 175.0), (100.0, 50.0, 175.0), (150.0, 50.0, 125.0),
+                        (0.0, 100.0, 125.0), (50.0, 100.0, 175.0), (100.0, 100.0, 175.0), (150.0, 100.0, 125.0),
+                        (0.0, 150.0, 100.0), (50.0, 150.0, 125.0), (100.0, 150.0, 125.0), (150.0, 150.0, 100.0)
+                    ],
+                    "name": "curve3d",
+                    "color": "blue",
+                    "points_per_segment": 10,
+                }
+            )
+        )
 
     def run(self):
         self.root.mainloop()

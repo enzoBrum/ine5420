@@ -2,6 +2,7 @@ from copy import deepcopy
 from tkinter import Canvas
 
 from numpy import arange
+from itertools import batched
 
 from clipping import BezierClipper
 from shape import Shape
@@ -23,10 +24,10 @@ class Curve2D(Shape):
         points_per_segment: int = 10,
     ) -> None:
         super().__init__(points, name, color)
-        self.points_per_segment = min(max(points_per_segment, 100), 1000)
-        self.__bezier()
+        self.points_per_segment = min(max(points_per_segment, 10), 100)
+        self._bezier()
 
-    def __bezier(self) -> None:
+    def _bezier(self) -> None:
         new_points = []
 
         print(self.points, self.points_per_segment)
@@ -70,7 +71,7 @@ class Curve2D(Shape):
 
         self.points = new_points
         self.ppc_points = deepcopy(self.points)
-        print(self.points)
+        print(f"BEZIER 2D: {self.points}")
 
     def serialize(self, vertices: dict[Vector3, int], hex_to_color: dict[str, str]) -> str:
         raise NotImplementedError
@@ -85,8 +86,5 @@ class Curve2D(Shape):
         return ignore_lines_in_window_border(points, transformed_points, window_min, window_max)
 
     def draw(self, canvas: Canvas, points: list[Vector3]):
-        new_points = []
-        for i in range(0, len(points), 2):
-            new_points.append((points[i], points[i + 1]))
-        for p1, p2 in new_points:
+        for p1, p2 in batched(points, 2):
             canvas.create_line(p1.x, p1.y, p2.x, p2.y, width=3, fill=self.color, tags=self.id)
