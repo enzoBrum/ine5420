@@ -81,13 +81,6 @@ class App:
                     shape = Line(points, name, color)
                 case "wireframe":
                     shape = Wireframe3D(lines, name, color)
-                case "curve2d":
-                    shape = Curve2D(
-                        points,
-                        name,
-                        color,
-                        int(data["points_per_segment"]),
-                    )
                 case "bspline":
                     shape = BSpline(
                         points,
