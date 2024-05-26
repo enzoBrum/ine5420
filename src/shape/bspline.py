@@ -24,8 +24,8 @@ class BSpline(Shape):
 
         self.points_per_segment = min(max(points_per_segment, 100), 1000)
 
-        self.__calculate_delta_matrix()
-        self.__bsplines()
+        self._calculate_delta_matrix()
+        self._bsplines()
 
     def serialize(self, vertices: dict[Vector3, int], hex_to_color: dict[str, str]) -> str:
         raise NotImplementedError
@@ -39,7 +39,7 @@ class BSpline(Shape):
     ) -> list[Vector3]:
         return ignore_lines_in_window_border(points, transformed_points, window_min, window_max)
 
-    def __bsplines(self) -> None:
+    def _bsplines(self) -> None:
         new_points = []
         coeficients = self.__calculate_coefficients()
 
@@ -53,7 +53,7 @@ class BSpline(Shape):
 
         self.points = new_points
 
-    def __calculate_delta_matrix(self) -> None:
+    def _calculate_delta_matrix(self) -> None:
         delta = 1 / self.points_per_segment
         delta2 = delta * delta
         delta3 = delta2 * delta
