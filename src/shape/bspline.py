@@ -41,14 +41,14 @@ class BSpline(Shape):
 
     def _bsplines(self) -> None:
         new_points = []
-        coeficients = self.__calculate_coefficients()
+        coeficients = self._calculate_coefficients()
 
         for i in range(len(coeficients["X"])):
             D_x = matmul(self.delta_matrix, coeficients["X"][i])
             D_y = matmul(self.delta_matrix, coeficients["Y"][i])
             D_z = matmul(self.delta_matrix, coeficients["Z"][i])
 
-            points = self.__calculate_segment_points(D_x, D_y, D_z)
+            points = self._calculate_segment_points(D_x, D_y, D_z)
             new_points.extend(points)
 
         self.points = new_points
@@ -65,7 +65,7 @@ class BSpline(Shape):
             [6 * delta3, 0, 0, 0],
         ]
 
-    def __calculate_coefficients(self) -> None:
+    def _calculate_coefficients(self) -> None:
         Mbs = [
             [-1 / 6, 3 / 6, -3 / 6, 1 / 6],
             [3 / 6, -6 / 6, 3 / 6, 0],
@@ -103,7 +103,7 @@ class BSpline(Shape):
 
         return coeficients
 
-    def __calculate_segment_points(self, x_delta: array, y_delta: array, z_delta: array) -> list[Vector3]:
+    def _calculate_segment_points(self, x_delta: array, y_delta: array, z_delta: array) -> list[Vector3]:
         new_points = []
 
         x, d_x, d2_x, d3_x = x_delta

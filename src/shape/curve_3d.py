@@ -15,6 +15,8 @@ class Curve3D(Curve2D):
     
     def __init__(self, control_points: list[Vector3], name: str, color: str, points_per_segment: int = 10):
         self.control_points = control_points
+
+        points_per_segment = min(points_per_segment, 10)
         print(f"CONTROL POINTS: {control_points} ({len(control_points)})")
         super().__init__([], name, color, points_per_segment)
         
