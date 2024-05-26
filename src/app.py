@@ -12,9 +12,20 @@ from descritor_obj import DescritorOBJ
 from display_file import DisplayFile
 from event import Events
 from interface import Viewport, Window
-from shape import BSpline, Curve2D, Line, Point, Point3D, Shape, Wireframe, Wireframe3D, Curve3D, BSpline3D
-from transformations import Transformer3D
 from projections import parallel_projection, perspective_projection
+from shape import (
+    BSpline,
+    BSpline3D,
+    Curve2D,
+    Curve3D,
+    Line,
+    Point,
+    Point3D,
+    Shape,
+    Wireframe,
+    Wireframe3D,
+)
+from transformations import Transformer3D
 from vector3 import Vector3
 from widgets import Configuration, MovementControls, ShapeListbox
 
@@ -340,22 +351,34 @@ class App:
 
         self.load_shapes("./cube_and_pyramid.obj")
 
-        # self.add_shape(
-        #     json.dumps(
-        #         {
-        #             "type": "curve3d",
-        #             "control_points": [
-        #                 (0.0, 0.0, 100.0), (50.0, 0.0, 125.0), (100.0, 0.0, 125.0), (150.0, 0.0, 100.0),
-        #                 (0.0, 50.0, 125.0), (50.0, 50.0, 175.0), (100.0, 50.0, 175.0), (150.0, 50.0, 125.0),
-        #                 (0.0, 100.0, 125.0), (50.0, 100.0, 175.0), (100.0, 100.0, 175.0), (150.0, 100.0, 125.0),
-        #                 (0.0, 150.0, 100.0), (50.0, 150.0, 125.0), (100.0, 150.0, 125.0), (150.0, 150.0, 100.0)
-        #             ],
-        #             "name": "curve3d",
-        #             "color": "blue",
-        #             "points_per_segment": 10,
-        #         }
-        #     )
-        # )
+        self.add_shape(
+            json.dumps(
+                {
+                    "type": "curve3d",
+                    "control_points": [
+                        (0.0, 0.0, 100.0),
+                        (50.0, 0.0, 125.0),
+                        (100.0, 0.0, 125.0),
+                        (150.0, 0.0, 100.0),
+                        (0.0, 50.0, 125.0),
+                        (50.0, 50.0, 175.0),
+                        (100.0, 50.0, 175.0),
+                        (150.0, 50.0, 125.0),
+                        (0.0, 100.0, 125.0),
+                        (50.0, 100.0, 175.0),
+                        (100.0, 100.0, 175.0),
+                        (150.0, 100.0, 125.0),
+                        (0.0, 150.0, 100.0),
+                        (50.0, 150.0, 125.0),
+                        (100.0, 150.0, 125.0),
+                        (150.0, 150.0, 100.0),
+                    ],
+                    "name": "curve3d",
+                    "color": "blue",
+                    "points_per_segment": 10,
+                }
+            )
+        )
 
         self.add_shape(
             json.dumps(
@@ -365,7 +388,7 @@ class App:
                         [(0.0, 0.0, 100.0), (50.0, 0.0, 125.0), (100.0, 0.0, 125.0), (150.0, 0.0, 100.0)],
                         [(0.0, 50.0, 125.0), (50.0, 50.0, 175.0), (100.0, 50.0, 175.0), (150.0, 50.0, 125.0)],
                         [(0.0, 100.0, 125.0), (50.0, 100.0, 175.0), (100.0, 100.0, 175.0), (150.0, 100.0, 125.0)],
-                        [(0.0, 150.0, 100.0), (50.0, 150.0, 125.0), (100.0, 150.0, 125.0), (150.0, 150.0, 100.0)]
+                        [(0.0, 150.0, 100.0), (50.0, 150.0, 125.0), (100.0, 150.0, 125.0), (150.0, 150.0, 100.0)],
                     ],
                     "name": "bspline3d",
                     "color": "red",

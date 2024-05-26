@@ -83,7 +83,8 @@ class Viewport:
                 continue
             points = shape.clipper.clip(shape.ppc_points, window_max, window_min)
             transformed_points = self._viewport_transform(window_min, window_max, points, window.n_zoom)
-            final_points = shape.process_clipped_points(points, transformed_points, window_min, window_max)
+            #final_points = shape.process_clipped_points(points, transformed_points, window_min, window_max)
+            final_points = transformed_points
 
             if not len(final_points):
                 continue

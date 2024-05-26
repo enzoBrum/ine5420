@@ -22,7 +22,7 @@ class BSpline(Shape):
     ) -> None:
         super().__init__(points, name, color)
 
-        self.points_per_segment = min(max(points_per_segment, 100), 1000)
+        self.points_per_segment = min(max(points_per_segment, 1), 1000)
 
         self._calculate_delta_matrix()
         self._bsplines()
