@@ -72,13 +72,13 @@ class AddObject:
             ),
         )
 
-    def add_bspline(self, points, name, color, points_per_segment):
+    def add_bspline3d(self, points, name, color, points_per_segment):
         self.root.event_generate(
             Events.ADD_SHAPE,
             data=json.dumps(
                 {
-                    "type": "bspline",
-                    "points": list(points),
+                    "type": "bspline3d",
+                    "control_points": points,
                     "name": name,
                     "color": color,
                     "points_per_segment": points_per_segment,
@@ -103,7 +103,7 @@ class AddObject:
 
         ttk.Label(self.frame, text="Shape:").grid(row=2, column=0, padx=10, pady=5)
         type_var = StringVar(self.frame)
-        options = ["Select a shape", "Point3D", "Line", "Object3D", "Curve3D", "BSpline2D"]
+        options = ["Select a shape", "Point3D", "Line", "Object3D", "Curve3D", "BSpline3D"]
         ttk.OptionMenu(
             self.frame,
             type_var,
@@ -159,11 +159,12 @@ class AddObject:
                 print(points)
 
                 self.add_curve3d(points, name, color, points_per_segment)
-            elif type_obj == "BSpline2D":
-                points = eval(f"[{shape_frame.winfo_children()[1].get()}]")
+            elif type_obj == "BSpline3D":
+                points = shape_frame.winfo_children()[1].get()
+                points_matrix = [eval(f"[{line}]") for line in points.split(";")]
                 points_per_segment = int(shape_frame.winfo_children()[3].get())
 
-                self.add_bspline(points, name, color, points_per_segment)
+                self.add_bspline3d(points_matrix, name, color, points_per_segment)
         except:
             from traceback import print_exc
 
@@ -237,10 +238,10 @@ class AddObject:
             ).grid(row=2, column=0, padx=5, pady=5)
             entry_points_per_segment = ttk.Entry(shape_frame)
             entry_points_per_segment.grid(row=3, column=0, padx=5, pady=5)
-        elif type_obj == "BSpline2D":
+        elif type_obj == "BSpline3D":
             ttk.Label(
                 shape_frame,
-                text="Give the points in exactly format: (x1, y1), (x2, y2), (x3,y3) ...",
+                text="Give the points in exactly format: (x_11,y_11,z_11),(x_12,y_12,z_12),...;(x_21,y_21,z_21),(x_22,y_22,z_22),...;...(x_ij,y_ij,z_ij)",
             ).grid(row=0, column=0, padx=5, pady=5)
             entry_points = ttk.Entry(shape_frame)
             entry_points.grid(row=1, column=0, padx=5, pady=5)
